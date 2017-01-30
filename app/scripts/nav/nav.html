@@ -1,0 +1,10 @@
+<div ng-controller="navController">
+    <md-content md-theme="docs-dark" class="md-padding">
+        <md-nav-bar class="md-accent" md-selected-nav-item="currentNavItem">
+            <md-nav-item md-nav-click="goto('page1')" name="page1">Page One</md-nav-item>
+            <md-nav-item md-nav-click="goto('home')" ui-sref="home()" name="page2">Home</md-nav-item>
+            <md-nav-item md-nav-click="goto('model')" ui-sref="model()">Model</md-nav-item>
+            <md-nav-item md-nav-click="goto('project')" ui-sref="project()">Project</md-nav-item>
+        </md-nav-bar>
+    </md-content>
+</div>

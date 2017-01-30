@@ -1,29 +1,90 @@
 <!DOCTYPE html>
 <html lang="en" ng-app="app">
+
 <head>
     <title>Customer Manager</title>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="description" content="">
+
     <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no" />
+
+
     <!-- build:css assets/css/app.css -->
-    <link rel="stylesheet" href="../bower_components/angular-material/angular-material.css" />
+    <link rel="stylesheet" href="../bower_components/angular-material/angular-material.min.css" />
+    <link rel="stylesheet" href="../bower_components/bootstrap/dist/css/bootstrap.min.css" />
+
+
     <link rel="stylesheet" href="assets/css/style.css" />
     <!-- endbuild -->
+    <!--Navigation-->
+
+
+    </div>
+
+
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <style>
+			body {
+				font-family: Monospace;
+				background-color: #000;
+				margin: 0px;
+				overflow: hidden;
+			}
+			#info {
+				position: absolute;
+				color: #fff;
+				top: 0px;
+				width: 100%;
+				padding: 5px;
+				text-align:center;
+			}
+			a {
+				color: #fff;
+			}
+		</style>
 </head>
+
 <body>
-    <ng-view></ng-view>
+    <div class="row" ng-include="'scripts/nav/nav.html'">
+
+    </div>
+
+    <div ui-view></div>
+
+
     <!-- build:js scripts/vendor.js -->
     <script src="../bower_components/angular/angular.js"></script>
     <script src="../bower_components/angular-route/angular-route.js"></script>
     <script src="../bower_components/angular-animate/angular-animate.js"></script>
     <script src="../bower_components/angular-aria/angular-aria.js"></script>
     <script src="../bower_components/angular-material/angular-material.js"></script>
+    <script src="../bower_components/angular-messages/angular-messages.min.js"></script>
+    <script src="../bower_components/angular-ui-router/release/angular-ui-router.min.js"></script>
+    <script src="../bower_components/jquery/dist/jquery.min.js"></script>
+    <script src="../bower_components/mdPickers/dist/mdPickers.min.js"></script>
+    <script src="../bower_components/moment/moment.js"></script>
+    <script src="../bower_components/angular-file-upload/dist/angular-file-upload.js"></script>
     <!-- endbuild -->
+
+
     <!-- build:app scripts/app.js -->
     <script src="./scripts/app.js"></script>
-    <script src="./scripts/customer/customerService.js"></script>
-    <script src="./scripts/customer/customerController.js"></script>
+    <script src="./scripts/router.js"></script>
+    <script src="./scripts/home/customerService.js"></script>
+    <script src="./node_modules/three/build/three.js"></script>
+
+
+    <!--Controllers-->
+    <script src="./scripts/home/home.controller.js"></script>
+    <script src="./scripts/nav/nav.controller.js"></script>
+    <script src="./scripts/model/model.controller.js"></script>
+    <script src="./scripts/project/project.controller.js"></script>
+
+
     <!-- endbuild -->
 </body>
+
 </html>

@@ -29,6 +29,7 @@ gulp.task('copy', ['clean'], function () {
         overwrite: true,
         matching: [
             './node_modules/**/*',
+            '../bower_components/**/*',
             '*.html',
             '*.css',
             'main.js',
@@ -51,15 +52,16 @@ gulp.task('run', function () {
 });
 
 gulp.task('build-electron', function () {
-    switch (os.platform()) {
-        case 'darwin':
-            // execute build.osx.js 
-            break;
-        case 'linux':
-            //execute build.linux.js
-            break;
-        case 'win32':
-        console.log('sdf')
+    // switch (os.platform()) {
+    //     case 'darwin':
+    //         // execute build.osx.js 
+    //         break;
+    //     case 'linux':
+    //         console.log('sdf')
+    //          build.linux.js
+    //         break;
+    //     case 'win32':
+    //         console.log('sdf')
             return release_windows.build();
-    }
+   // }
 });

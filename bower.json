@@ -8,9 +8,13 @@
     "email": ""
   },
   "dependencies": {
-    "angular": "~1.4.4",
-    "angular-material": "~0.10.1",
+    "angular-material": "~1.1.0",
     "angular-route": "~1.4.4",
-    "bootstrap": "~3.3.5"
+    "bootstrap": "~3.3.5",
+    "angular-ui-router": "^0.4.2",
+    "ng-table": "^4.0.0",
+    "mdPickers": "^0.7.5",
+    "moment": "^2.17.1",
+    "angular-file-upload": "^2.4.1"
   }
 }

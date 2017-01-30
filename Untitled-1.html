@@ -1,0 +1,69 @@
+<!DOCTYPE HTML>
+
+<html>
+
+<head>
+
+    <style>
+
+      html, body {
+
+        height: 100%;
+
+      }
+
+    </style>
+
+</head>
+
+<body>
+
+
+
+    <p>X: <input id="resultX" type="text"></p>
+    <p>Y: <input id="resultY" type="text"></p>
+
+
+    <p>:
+        <button id="newShpang" onmousedown="newShpang()" type="text"> new Shpang</button>
+<button id="getResult" onmousedown="getResult()" type="text"> Result</button>
+</p>
+
+<img src="./002.jpg"> </img>
+
+<script>
+                                    var result = {
+                                        x: 0,
+                                        y: 0
+                                    };
+
+                                    var start = 96;
+
+                                    var index = 0;
+                                    var resultArray = [[]];
+
+                                    function newShpang() {
+                                        start = start - 8;
+                                        index++;
+                                        resultArray.push([]);
+                                    }
+                                    function getResult() {
+                                        console.log('resultArray', JSON.stringify(resultArray));
+                                    }
+
+                                    document.body.onmousedown = function (e) {
+                                        e = e || window.event;
+
+                                        result.x = e.clientX - 1590;
+                                        result.y = -(e.clientY - 1496);
+                                        console.log('result', result);
+                                        resultArray[index].push({
+                                            x: e.clientX - 1590,
+                                            y: e.clientY - 1496,
+                                            z:start
+                                        });
+                                    }
+</script>
+</body>
+
+</html>
