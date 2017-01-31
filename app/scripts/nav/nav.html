@@ -1,10 +1,33 @@
 <div ng-controller="navController">
     <md-content md-theme="docs-dark" class="md-padding">
+
         <md-nav-bar class="md-accent" md-selected-nav-item="currentNavItem">
-            <md-nav-item md-nav-click="goto('page1')" name="page1">Page One</md-nav-item>
-            <md-nav-item md-nav-click="goto('home')" ui-sref="home()" name="page2">Home</md-nav-item>
-            <md-nav-item md-nav-click="goto('model')" ui-sref="model()">Model</md-nav-item>
-            <md-nav-item md-nav-click="goto('project')" ui-sref="project()">Project</md-nav-item>
+            <md-nav-item md-nav-click="goto('project')" ui-sref="project()"  name="project"><span class="md-title">Project</span></md-nav-item>
+            <md-nav-item md-nav-click="goto('home')" ui-sref="home()" name="home"><span class="md-title">Home</span></md-nav-item>
+            <md-nav-item md-nav-click="goto('model')" ui-sref="model()" name="model"><span class="md-title">Model</span></md-nav-item>
+            <md-nav-item md-nav-click="goto('settings')" ui-sref="settings()" name="settings"><span class="md-title">Serch</span></md-nav-item>
+
+            <md-fab-speed-dial md-open="isOpen" md-direction="left" ng-class="selectedMode" class="md-scale md-fab-top-right">
+                <md-fab-trigger>
+                    <md-button aria-label="menu" class="md-fab md-primary">
+                        <md-icon md-svg-src="assets/icons/menu.svg"></md-icon>
+                    </md-button>
+                </md-fab-trigger>
+
+                <md-fab-actions>
+                    <md-button aria-label="Twitter" class="md-fab md-raised md-mini">
+                        <md-icon md-svg-src="assets/icons/settings.svg" aria-label="Settings"></md-icon>
+                    </md-button>
+                    <md-button aria-label="Facebook" class="md-fab md-raised md-mini">
+                        <md-icon md-svg-src="assets/icons/doc.svg" aria-label="Documentation"></md-icon>
+                    </md-button>
+                    <md-button aria-label="Google Hangout" class="md-fab md-raised md-mini">
+                        <md-icon md-svg-src="assets/icons/doc.svg" aria-label="Google Hangout"></md-icon>
+                    </md-button>
+                </md-fab-actions>
+            </md-fab-speed-dial>
+
         </md-nav-bar>
+
     </md-content>
 </div>

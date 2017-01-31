@@ -2,8 +2,11 @@
 'use strict';
 
 angular.module('app')
-    .controller('projectController', ['$scope', '$q', '$mdDialog', '$timeout', '$mdpDatePicker',
-        function homeController($scope, $q, $mdDialog, $timeout, $mdpDatePicker) {
+    .controller('projectController', ['$rootScope', '$scope', '$q', '$mdDialog', '$timeout', '$mdpDatePicker',
+        function homeController($rootScope, $scope, $q, $mdDialog, $timeout, $mdpDatePicker) {
+
+            $scope.language = $rootScope.getLanguage();
+            
             $scope.myDate = new Date();
 
             $scope.minDate = new Date(
@@ -122,5 +125,5 @@ angular.module('app')
             }
         }
     ]);
-   
+
 

@@ -1,10 +1,15 @@
-import English from './engligh';
-import Russian from './russian';
+const English = require('./english');
+const Russian = require('./russian');
 
 
 
-
-export default {
-    english: English,
-    russian: Russian
+var Languages = {
+    English: English,
+    Russian: Russian
 }
+
+
+
+
+
+module.exports = Languages;

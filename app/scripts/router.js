@@ -18,7 +18,7 @@ angular
         controller: 'settingsController'
       })
       .state('project', {
-        url: '/project',
+        url: '/',
         templateUrl: './scripts/project/project.html',
         controller: 'projectController'
       });

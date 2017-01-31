@@ -1,87 +1,65 @@
+<md-content md-theme="docs-dark" layout-gt-sm="row" layout-padding>
+<h2>Project</h2>
+
+</md-content>
 
 <md-content md-theme="docs-dark" layout-gt-sm="row" layout-padding>
-    <div flex-gt-xs>
-        <h4>Standard date-picker</h4>
-        <md-datepicker ng-model="myDate" md-placeholder="Enter date"></md-datepicker>
-    </div>
-    <div>
-        <md-input-container>
-            <div flex-gt-xs>
-               <mdp-date-picker mdp-placeholder="Date" ng-model="currentDate"></mdp-date-picker>
-            </div>
-        </md-input-container>
 
-        <md-input-container>
-            <p>
-                Click the button below to open the dialog with an autocomplete.
-            </p>
-            <md-button ng-click="openDialog($event)" class="md-raised">Open Dialog</md-button>
-        </md-input-container>
-    </div>
+
+  <div flex-gt-sm="column">
+    <h4>{{language.project.received}}</h4>
+    <md-datepicker ng-model="myDate" md-placeholder="Enter date"></md-datepicker>
+    <md-input-container class="md-block" flex-gt-sm>
+      <label>{{language.project.port_name}}</label>
+      <input ng-model="user.firstName">
+    </md-input-container>
+  </div>
+  <div flex-gt-xs="column">
+
+  </div>
+  <div flex-gt-sm="column">
+    <h4>{{language.project.income}}</h4>
+    <md-datepicker ng-model="myDate" md-placeholder="Enter date"></md-datepicker>
+    <md-input-container class="md-block" flex-gt-sm>
+      <label>{{language.project.port_name}}</label>
+      <input ng-model="user.firstName">
+    </md-input-container>
+  </div>
+
+
 </md-content>
+<!--<md-button ng-click="openDialog($event)" class="md-raised">Open Dialog</md-button>-->
 <md-content md-theme="docs-light" layout-padding>
-    <div layout-gt-xs="row">
-      <div flex-gt-xs>
-        <h4>Standard date-picker</h4>
-        <md-datepicker ng-model="myDate" md-placeholder="Enter date"></md-datepicker>
-      </div>
-      <div flex-gt-xs>
-        <h4>Disabled date-picker</h4>
-        <md-datepicker ng-model="myDate" md-placeholder="Enter date" disabled></md-datepicker>
-      </div>
+  <div layout-gt-md="row">
+    <md-input-container class="md-block" flex-gt-sm>
+      <label>{{language.project.name}}</label>
+      <input ng-model="user.firstName">
+    </md-input-container>
+  </div>
+  <div layout-gt-md="row">
+    <div flex-gt-sm="column">
+      <md-input-container class="md-block">
+        <label>{{language.project.notes}}</label>
+        <textarea class="md-display-1" ng-model="project.notes" md-maxlength="150" rows="5" md-select-on-focus></textarea>
+      </md-input-container>
+      <md-input-container class="md-block">
+        <label>{{language.project.cargo_description}}</label>
+        <textarea ng-model="project.cargo_description" md-maxlength="100" rows="5" md-select-on-focus></textarea>
+      </md-input-container>
     </div>
-    <div layout-gt-xs="row">
-      <div flex-gt-xs>
-        <h4>Date-picker with min date and max date</h4>
-        <md-datepicker ng-model="myDate" md-placeholder="Enter date"
-            md-min-date="minDate" md-max-date="maxDate"></md-datepicker>
-      </div>
-      <div flex-gt-xs>
-        <h4>Only weekends are selectable</h4>
-        <md-datepicker ng-model="myDate" md-placeholder="Enter date"
-            md-date-filter="onlyWeekendsPredicate"></md-datepicker>
-      </div>
+    <div flex-gt-xs="column">
+      <img src="assets/img/project2.png"></img>
     </div>
-    <div layout-gt-xs="row">
-      <div flex-gt-xs>
-        <h4>Only weekends within given range are selectable</h4>
-        <md-datepicker ng-model="myDate" md-placeholder="Enter date"
-            md-min-date="minDate" md-max-date="maxDate"
-            md-date-filter="onlyWeekendsPredicate"></md-datepicker>
-      </div>
-      <div flex-gt-xs>
-        <h4>Opening the calendar when the input is focused</h4>
-        <md-datepicker ng-model="myDate" md-placeholder="Enter date"
-          md-open-on-focus></md-datepicker>
-      </div>
-    </div>
-    <div layout-gt-xs="row">
-      <form name="myForm" flex-gt-xs>
-        <h4>With ngMessages</h4>
-        <md-datepicker name="dateField" ng-model="myDate" md-placeholder="Enter date"
-            required md-min-date="minDate" md-max-date="maxDate"
-            md-date-filter="onlyWeekendsPredicate"></md-datepicker>
-        <div class="validation-messages" ng-messages="myForm.dateField.$error">
-          <div ng-message="valid">The entered value is not a date!</div>
-          <div ng-message="required">This date is required!</div>
-          <div ng-message="mindate">Date is too early!</div>
-          <div ng-message="maxdate">Date is too late!</div>
-          <div ng-message="filtered">Only weekends are allowed!</div>
-        </div>
-      </form>
-      <form name="myOtherForm" flex-gt-xs>
-        <h4>Inside a md-input-container</h4>
-        <md-input-container>
-          <label>Enter date</label>
-          <md-datepicker ng-model="myDate" name="dateField" md-min-date="minDate"
-            md-max-date="maxDate"></md-datepicker>
-          <div ng-messages="myOtherForm.dateField.$error">
-            <div ng-message="valid">The entered value is not a date!</div>
-            <div ng-message="required">This date is required!</div>
-            <div ng-message="mindate">Date is too early!</div>
-            <div ng-message="maxdate">Date is too late!</div>
-          </div>
-        </md-input-container>
-      </form>
-    </div>
-  </md-content>
+  </div>
+  <div layout-gt-md="row">
+    <md-input-container flex-gt-sm class="md-block">
+      <label>{{language.project.tonn_meter}}</label>
+      <input type="number" ng-model="project.tonn_meter">
+    </md-input-container>
+    <md-input-container flex-gt-sm class="md-block">
+      <md-checkbox ng-model="project.accounting_icing">
+        {{language.project.accounting_icing}}
+      </md-checkbox>
+    </md-input-container>
+  </div>
+</md-content>

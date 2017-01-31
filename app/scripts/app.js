@@ -1,3 +1,6 @@
+var path = require('path');
+
+const Languages  = require ('./assets/languages/index');
 
 
 'use strict';
@@ -14,6 +17,29 @@ angular.module('app', [
     'angularFileUpload'
 
 ])
+    .run(function ($rootScope) {
+
+        /**
+         * function for settingLanguage
+         */
+        function setLanguage(language) {
+
+        }
+
+
+        /**
+        * function for gettingLanguage
+        */
+        function getLanguage(language) {
+            return Languages.English;
+        }
+        
+
+        getLanguage();
+        $rootScope.Setlanguage = setLanguage;
+        $rootScope.getLanguage = getLanguage;
+       
+    })
     .config(['$routeProvider', function ($routeProvider) {
         // $routeProvider.when('/', {
         //     templateUrl: _templateBase + '/customer/customer.html' ,
