@@ -63,3 +63,15 @@
   md-fab-speed-dial.md-fab-top-right{
     top:-17px !important;
   }
+
+  .navBar{
+    height: 10vh;
+  }
+  .md-sidenav-left, md-sidenav{
+    top:10vh !important;
+  }
+  .model{
+    padding: 0px !important;
+   
+    border-left: 1px solid #424242!important; 
+  }

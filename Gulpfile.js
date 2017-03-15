@@ -16,6 +16,7 @@ var projectDir = jetpack;
 var srcDir = projectDir.cwd('./app');
 var destDir = projectDir.cwd('./build');
 
+
 // -------------------------------------
 // Tasks
 // -------------------------------------
@@ -29,7 +30,8 @@ gulp.task('copy', ['clean'], function () {
         overwrite: true,
         matching: [
             './node_modules/**/*',
-            '../bower_components/**/*',
+            './node_modules/**/**/*',
+            './bower_components/**/*',
             '*.html',
             '*.css',
             'main.js',

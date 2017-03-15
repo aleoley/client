@@ -14,7 +14,8 @@ angular.module('app', [
     'ngAnimate',
     'ui.router',
     'mdPickers',
-    'angularFileUpload'
+    'angularFileUpload',
+    'ngTable'
 
 ])
     .run(function ($rootScope) {
