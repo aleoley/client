@@ -790,22 +790,6 @@ angular.module('app')
                         return ((point3.y - point1.y) / (point2.y - point1.y)) * (point2.x - point1.x) + point1.x;
                     }
 
-                    var inputData = ['a', 'a', 'a', 'a', 'b', 'c', 'c', 'a', 'a', 'd', 'e', 'e', 'e', 'e'];
-
-                    function pack(inputData) {
-                        var usedChars = [];
-                        var outArray = _.map(inputData, function(char)  {
-                            if (_.indexOf(usedChars, char)<0) {
-                                usedChars.push(char);
-                                return _.filter(inputData, function(ch)  { return ch === char });
-                            }
-                            return;
-                        });
-                        var out = _.filter(outArray, function(arr){return arr});
-                        return out;
-                    }
-                    var res = pack(inputData);
-                    console.log('!!!!!!!!!!',res)
                     var initialTimeout = 10;
 
                     // Outer Voleme Intitalize
@@ -814,20 +798,20 @@ angular.module('app')
                     //Initialize Global iterator 
                     var asyncI = 0;
                     simpleShpangs = _.map(simpleShpangs, function (spang) {
-                        var midddleShpang = _.filter(spang, function (point) {
-                            return point.y <= 5.465;
-                        });
+                        // var midddleShpang = _.filter(spang, function (point) {
+                        //     return point.y <= 5.465;
+                        // });
 
-                        var proectionPoint = new THREE.Vector3();
+                        // var proectionPoint = new THREE.Vector3();
 
-                        if (spang[midddleShpang.length]) {
-                            proectionPoint.z = spang[midddleShpang.length].z;
-                            proectionPoint.y = 5.465;
-                            proectionPoint.x = getProectionOnLine(spang[midddleShpang.length], spang[midddleShpang.length - 1], proectionPoint);
-                            console.log('proectionPoint', proectionPoint);
-                        }
-                        midddleShpang.push(proectionPoint);
-                        return _.reverse(midddleShpang);
+                        // if (spang[midddleShpang.length]) {
+                        //     proectionPoint.z = spang[midddleShpang.length].z;
+                        //     proectionPoint.y = 5.465;
+                        //     proectionPoint.x = getProectionOnLine(spang[midddleShpang.length], spang[midddleShpang.length - 1], proectionPoint);
+                        //     console.log('proectionPoint', proectionPoint);
+                        // }
+                        // midddleShpang.push(proectionPoint);
+                        return _.reverse(spang);
                     });
 
                     async.eachSeries(simpleShpangs, function (thisShpang, eachCallback1) {
