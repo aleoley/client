@@ -177,16 +177,20 @@ angular.module('app')
                         [
                             new THREE.Vector3(6, 0, 3),
                             new THREE.Vector3(9, 5, 3),
+                            new THREE.Vector3(10, 6, 3),
                             new THREE.Vector3(10, 7, 3),
-                            new THREE.Vector3(11, 9, 3),
+                            new THREE.Vector3(18, 9, 3),
+                            new THREE.Vector3(21, 21, 3),
 
 
 
                         ],
                         [
-                            new THREE.Vector3(5, 0, 15),
-                            new THREE.Vector3(8, 5, 15),
-                            new THREE.Vector3(9, 8, 15),
+                            new THREE.Vector3(5, 0, 13),
+                            new THREE.Vector3(8, 5, 14),
+                            new THREE.Vector3(0, 6, 15),
+                            new THREE.Vector3(0, 7, 14),
+                            new THREE.Vector3(9, 8, 13),
 
                         ]
                     ]
@@ -236,78 +240,56 @@ angular.module('app')
                     /**
                      * This function must return only 2 vertex with min distanse to current
                      */
-                    function minDistanse(vertex, shapg, flag) {
-                        var outObject = {
-                            vertex1: {},
-                            vertex2: {},
-                            vertex: vertex
-                        };
-                        // var minPoint;
+                    function minDistanse(vertex, shapg, shpangX) {
 
-                        var proectionVectors = _.map(shapg, function (point) {
-                            return proectionX(point);
 
+                        outArray = [];
+                        var i = 0
+                        var sortedShapng = _.sortBy(shapg, function (point) {
+                            return  point.y;
+                        })
+                        var more = _.filter(sortedShapng, function (point) {
+                            return vertex.y < point.y;
+                        });
+                        var less = _.filter(sortedShapng, function (point) {
+                            return vertex.y >= point.y;
                         });
 
-                        var proectionPoint = proectionX(vertex);
-
-                        var sorted = _.sortBy(proectionVectors, function (point) {
-                            return distanceVector(proectionPoint, point);
-                        });
-
-                        var shpangsForShearch = _.filter(shapg, function (vector) { return vertex.x >= 0 ? vector.x >= 0 : vector.x <= 0 });
+                        if (more.length > 0 && less.length > 0) {
 
 
-                        var sortedDistanceShpangVertex = _.sortBy(shpangsForShearch, function (point) {
-                            return distanceVector(vertex, point);
-                        });
-                        var pointForCheck = sorted[0];
-                        var outArray = [];
-                        if (sorted.length > 1) {
-                            if (distanceVector(proectionPoint, sorted[0]) === distanceVector(proectionPoint, sorted[1])) {
-                                var pointForCheck1 = sorted[0];
-                                var pointForCheck2 = sorted[1];
-                                if (sorted[0].x === sorted[1].x && sorted[0].y === sorted[1].y) {
-                                    pointForCheck1 = sortedDistanceShpangVertex[1];
-                                    pointForCheck2 = sortedDistanceShpangVertex[0];
-                                }
+                            var moreDistance = Math.abs(Math.round((more[0].y - vertex.y) * 1e12) / 1e12);
+                            var lessDistance = Math.abs(Math.round((less[less.length - 1].y - vertex.y) * 1e12) / 1e12);
+                           
+                            switch (true) {
+                                case moreDistance.toFixed(3) > lessDistance.toFixed(3):
+                                    outArray.push(less[less.length - 1]);
+                                    break;
+                                case moreDistance.toFixed(3) < lessDistance.toFixed(3):
+                                    outArray.push(more[0]);
+                                    break;
+                                case moreDistance.toFixed(3) === lessDistance.toFixed(3) || (distanceVector(vertex, more[0]) === distanceVector(vertex, less[less.length - 1])):
+                                    outArray.push(more[0]);
+                                    outArray.push(less[less.length - 1]);
+                                   // console.log('GOVNOOOOOOO')
+                                    break;
 
-                                outArray.push(_.find(sortedDistanceShpangVertex, function (point) {
-                                    return point.y === pointForCheck1.y && point.z === pointForCheck1.z;
-                                }));
-
-                                outArray.push(_.findLast(sortedDistanceShpangVertex, function (point) {
-                                    return point.y === pointForCheck2.y && point.z === pointForCheck2.z;
-                                }));
-
-                            } else {
-                                var pointForCheck1 = sorted[0];
-                                var pointForCheck2 = sorted[1];
-                                // if (distanceVector(proectionPoint, sortedDistanceShpangVertex[0]) <= distanceVector(proectionPoint, sorted[0])) {
-                                // pointForCheck = sortedDistanceShpangVertex[0];
-                                //  }
-                                if (distanceVector(vertex, sorted[0]) === distanceVector(vertex, sorted[1])) {
-                                    console.log('11111111');
-                                    outArray.push(_.findLast(sortedDistanceShpangVertex, function (point) {
-                                        return point.y === pointForCheck2.y && point.z === pointForCheck2.z;
-                                    }));
-                                }
-                                if (sorted[0].x === sorted[1].x && sorted[0].y === sorted[1].y && sorted[0].z === sorted[1].z) {
-                                    console.log('blyyyyyyyyyyyyy')
-                                }
-                                outArray.push(_.findLast(sortedDistanceShpangVertex, function (point) {
-                                    return point.y === pointForCheck1.y && point.z === pointForCheck1.z;
-                                }));
+                                default:
+                                    break;
                             }
 
+                        } else {
+                            if (less.length > 0) {
+                                outArray.push(less[less.length - 1]);
+                            }
+                            if (more.length > 0) {
+                                outArray.push(more[0]);
+                            }
                         }
 
 
+                      
 
-                        if (sortedDistanceShpangVertex.length >= 2) {
-                            outObject.vertex1 = sortedDistanceShpangVertex[0];
-                            outObject.vertex2 = sortedDistanceShpangVertex[1];
-                        }
 
                         return outArray;
 
@@ -499,6 +481,10 @@ angular.module('app')
                         return new THREE.Vector3(proectionVector.x, proectionVector.y, proectionVector.z);
                     }
 
+                    function proectionOnShapng(point, ShpangX) {
+                        return new THREE.Vector3(point.x, point.y, ShpangX);
+                    };
+
                     //=================================START SQUEARS================================
 
 
@@ -532,11 +518,7 @@ angular.module('app')
                         var squeare = (h * (a + b)) / 2;
 
                         if (isNaN(squeare)) {
-                            console.log('NAN!!!!');
-                            console.log('a', a);
-                            console.log('b', b);
-                            console.log('c', c);
-                            console.log('d', d);
+
                             squeare = 0;
 
                         }
@@ -746,7 +728,7 @@ angular.module('app')
                         var pointsMaterial = new THREE.PointsMaterial({
                             color: '#5DB03D',
                             map: texture,
-                            size: 1,
+                            size: 0,
                             alphaTest: 0.6
                         });
                         var points = new THREE.Points(pointsGeometry, pointsMaterial);
@@ -756,7 +738,7 @@ angular.module('app')
 
                         var meshMaterial = new THREE.MeshLambertMaterial({
                             color: '#5DB03D',
-                            opacity: 0.1,
+                            opacity: 0,
                             transparent: visible ? false : true
                         });
                         // mesh = new THREE.Mesh(meshGeometry, meshMaterial);
@@ -784,13 +766,12 @@ angular.module('app')
 
                     }
                     function getProectionOnLine(point1, point2, point3) {
-                        console.log('point1', point1);
-                        console.log('point2', point2);
-                        console.log('point3', point3);
+
                         return ((point3.y - point1.y) / (point2.y - point1.y)) * (point2.x - point1.x) + point1.x;
                     }
 
                     var initialTimeout = 10;
+                    var initialPlusX = 0.019;
 
                     // Outer Voleme Intitalize
                     var outerVolume = 0;
@@ -798,7 +779,19 @@ angular.module('app')
                     //Initialize Global iterator 
                     var asyncI = 0;
                     simpleShpangs = _.map(simpleShpangs, function (spang) {
-                        // var midddleShpang = _.filter(spang, function (point) {
+                        var PlusShpangs = _.map(spang, function (point) {
+
+                            if (point.x !== 0) {
+                              
+                                var sum =   Math.round((initialPlusX + point.x) * 1e12) / 1e12;
+                               
+                                point.x = sum;
+                            }
+
+                            return point;
+                        });
+
+                        // var midddleShpang = _.filter(PlusShpangs, function (point) {
                         //     return point.y <= 5.465;
                         // });
 
@@ -811,7 +804,7 @@ angular.module('app')
                         //     console.log('proectionPoint', proectionPoint);
                         // }
                         // midddleShpang.push(proectionPoint);
-                        return _.reverse(spang);
+                        return _.reverse(PlusShpangs);
                     });
 
                     async.eachSeries(simpleShpangs, function (thisShpang, eachCallback1) {
@@ -824,6 +817,7 @@ angular.module('app')
                         }
                         var beforeShapng = simpleShpangs[asyncI - 1];
                         if (thisShpang.length > beforeShapng.length) {
+
                             async.eachSeries(thisShpang, function (thisPoint, eachCallback2) {
                                 if (asyncJ === 0) {
                                     asyncJ++;
@@ -838,10 +832,11 @@ angular.module('app')
                                 }
 
                                 var bottom = [beforePoint, thisPoint];
-                                var centerPoint = vertexCenter(beforePoint, thisPoint);
 
-                                var minDisArray = minDistanse(centerPoint, beforeShapng);
+                                var centerPoint = vertexCenter(proectionOnShapng(beforePoint, Ship.base[asyncI].ShpangX), proectionOnShapng(thisPoint, Ship.base[asyncI].ShpangX));
 
+                                var minDisArray = minDistanse(centerPoint, beforeShapng, Ship.base[asyncI - 1].ShpangX);
+                             
                                 var head = [minDisArray[0]];
                                 var shape = bottom.concat(head);
                                 // shape.push(proectionX(shape[0]));
@@ -861,7 +856,7 @@ angular.module('app')
                                 } else {
                                     visible = true;
                                 }
-
+                              
                                 addShape(shape, initialTimeout, function () {
                                     if (asyncJ >= beforeShapng.length) {
 
@@ -869,17 +864,21 @@ angular.module('app')
                                         eachCallback2();
                                     } else {
                                         var bottom2 = [beforeShapng[asyncJ - 1], beforeShapng[asyncJ - 0]];
-                                        var centerPoint = vertexCenter(beforeShapng[asyncJ - 1], beforeShapng[asyncJ - 0]);
-                                        var minDisArray = minDistanse(centerPoint, thisShpang, true);
-                                        var head2 = [minDisArray[0]];
-                                        if (minDisArray[1]) {
-                                            console.log('minDisArray J', asyncJ);
-                                            console.log('minDisArray I', asyncI);
-                                            console.log('minDisArray', minDisArray);
-                                            head2 = [minDisArray[1]];
+
+                                        var centerPoint = vertexCenter(proectionOnShapng(beforeShapng[asyncJ - 1], Ship.base[asyncI - 1].ShpangX), proectionOnShapng(beforeShapng[asyncJ - 0], Ship.base[asyncI - 1].ShpangX));
+
+                                        var minDisArray2 = minDistanse(centerPoint, thisShpang, Ship.base[asyncI].ShpangX);
+                                        var head2 = [minDisArray2[0]];
+                                      
+                                        if (minDisArray2[1]) {
+                                            if (minDisArray[0].y !== minDisArray2[1].y) {
+                                               
+                                                head2 = [minDisArray2[1]];
+                                            }
                                         }
 
                                         var shape2 = bottom2.concat(head2);
+                                       
                                         // shape.push(proectionX(shape[0]));
                                         // shape.push(proectionX(shape[1]));
                                         // shape.push(proectionX(shape[2]));
@@ -893,8 +892,8 @@ angular.module('app')
                                             visible = true;
                                         }
                                         if (isNaN(middleVolume)) {
-                                            console.log('NAN bottom', bottom2);
-                                            console.log('NAN head', head2);
+                                            // console.log('NAN bottom', bottom2);
+                                            // console.log('NAN head', head2);
                                         }
                                         addShape(shape2, initialTimeout, function () {
                                             asyncJ++;
@@ -915,6 +914,7 @@ angular.module('app')
                             });
                         } else {
                             async.eachSeries(beforeShapng, function (thisPoint, eachCallback2) {
+
                                 if (asyncJ === 0) {
                                     asyncJ++;
                                     return eachCallback2();
@@ -928,9 +928,9 @@ angular.module('app')
                                     thisShpangIndex = thisShpang.length - 1;
                                 }
                                 var bottom = [beforePoint, thisPoint];
-                                var centerPoint = vertexCenter(beforePoint, thisPoint);
+                                var centerPoint = vertexCenter(proectionOnShapng(beforePoint, Ship.base[asyncI - 1].ShpangX), proectionOnShapng(thisPoint, Ship.base[asyncI - 1].ShpangX));
 
-                                var minDisArray = minDistanse(centerPoint, thisShpang);
+                                var minDisArray = minDistanse(centerPoint, thisShpang, Ship.base[asyncI - 1].ShpangX);
                                 //   console.log('centerPoint', centerPoint);
                                 //  console.log('minDisArray', minDisArray);
                                 var head = [minDisArray[0]];
@@ -958,15 +958,18 @@ angular.module('app')
                                         eachCallback2();
                                     } else {
                                         var bottom2 = [thisShpang[asyncJ - 1], thisShpang[asyncJ - 0]];
-                                        var centerPoint = vertexCenter(thisShpang[asyncJ - 1], thisShpang[asyncJ - 0]);
-                                        var minDisArray = minDistanse(centerPoint, beforeShapng, true);
-                                        var head2 = [minDisArray[0]];
-                                        var head2 = [minDisArray[0]];
-                                        if (minDisArray[1]) {
-                                            console.log('minDisArray J', asyncJ);
-                                            console.log('minDisArray I', asyncI);
-                                            console.log('minDisArray', minDisArray);
-                                            head2 = [minDisArray[1]];
+
+                                        var centerPoint = vertexCenter(proectionOnShapng(thisShpang[asyncJ - 1], Ship.base[asyncI].ShpangX), proectionOnShapng(thisShpang[asyncJ - 0], Ship.base[asyncI].ShpangX));
+
+                                        var minDisArray2 = minDistanse(centerPoint, beforeShapng, Ship.base[asyncI - 1].ShpangX);
+                                        var head2 = [minDisArray2[0]];
+                                      
+                                        if (minDisArray2[1]) {
+                                            if (minDisArray[0].y !== minDisArray2[1].y) {
+                                               
+                                                head2 = [minDisArray2[1]];
+                                            }
+
                                         }
                                         var shape2 = bottom2.concat(head2);
                                         // shape.push(proectionX(shape[0]));
@@ -1005,6 +1008,7 @@ angular.module('app')
                     }, function (err) {
                         if (!err) {
                             console.log('GREAT!!!!!!!!!! VOLUEM=', outerVolume * 2);
+                            console.log('GREAT!!!!!!!!!!TONN VOLUEM=', outerVolume * 2 * 1.025);
                             console.log('GROUP', group);
                         }
                     });
@@ -1039,34 +1043,34 @@ angular.module('app')
 
 
 
-                    // pointsGeometry3.vertices = Shape3;
-
+                    // pointsGeometry3.vertices = Ship.Bow;
+                    // console.log('Ship.Bow', Ship.Bow);
                     // var pointsMaterial3 = new THREE.PointsMaterial({
-                    //     color: '#5DB03D',
+                    //     color: '#CC181E',
                     //     map: texture,
-                    //     size: 3,
+                    //     size: 1,
                     //     alphaTest: 0.6
                     // });
                     // var points3 = new THREE.Points(pointsGeometry3, pointsMaterial3);
-                    // group.add(points3);
+                    // // group.add(points3);
 
                     // var meshGeometry3 = new THREE.ConvexGeometry(pointsGeometry3.vertices);
 
                     // var meshMaterial3 = new THREE.MeshLambertMaterial({
-                    //     color: '#5DB03D',
+                    //     color: '#CC181E',
                     //     opacity: 0.5,
-                    //     transparent: true
+                    //     transparent: false
                     // });
                     // mesh3 = new THREE.Mesh(meshGeometry3, meshMaterial3);
                     // mesh3.material.side = THREE.BackSide; // back faces
                     // mesh3.renderOrder = 0;
-                    // group.add(mesh3);
+                    // //  group.add(mesh3);
                     // mesh3 = new THREE.Mesh(meshGeometry3, meshMaterial3.clone());
                     // mesh3.material.side = THREE.FrontSide; // front faces
                     // mesh3.renderOrder = 1;
-                    // group.add(mesh3);
+                    // // group.add(mesh3);
 
-                    console.log('meshGeometry', meshGeometry);
+                    // console.log('meshGeometry3', meshGeometry3);
                     window.addEventListener('resize', onWindowResize, false);
                 }
                 function randomPoint() {
