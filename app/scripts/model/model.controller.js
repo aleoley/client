@@ -8,7 +8,7 @@ var natali = require('./natali.js').natali;
 var _ = require('lodash');
 var TktLoader = require('./helpers/loaders').TktLoader;
 var async = require('async');
-
+var ModelBuilder = require('./helpers/modelBuilder');
 'use strict';
 
 angular.module('app')
@@ -36,14 +36,6 @@ angular.module('app')
             $scope.setWidth = function () {
                 renderer.setSize($scope.modelSize.width, $scope.modelSize.height);
             }
-
-
-
-
-
-
-
-
 
             $scope.show = function () {
                 if ($scope.model3d)
@@ -193,24 +185,12 @@ angular.module('app')
                             new THREE.Vector3(9, 8, 13),
 
                         ]
-                    ]
+                    ];
 
 
-                    // for (var i = 0; i < shpangs.shpangs.length; i++) {
-                    //     var middleArray = [];
-                    //     for (var j = 0; j < shpangs.shpangs[i].length; j++) {
-                    //         if ((shpangs.shpangs[i][j].x / 100) > 0) {
-                    //             middleArray.push(new THREE.Vector3((shpangs.shpangs[i][j].x / 100), -(shpangs.shpangs[i][j].y / 100), -(shpangs.shpangs[i][j].z / 1.3)));
-                    //         } else {
-                    //             middleArray.push(new THREE.Vector3(-(shpangs.shpangs[i][j].x / 100), -(shpangs.shpangs[i][j].y / 100), -(shpangs.shpangs[i][j].z / 1.3)));
-                    //         }
-
-
-                    //     }
-                    //     simpleShpangs.push(middleArray);
-                    // }
                     var Ship = TktLoader(natali);
-                    simpleShpangs = Ship.shpangs;
+                    //  Ship.shpangs = simpleShpangs;
+                    //simpleShpangs = Ship.shpangs;
                     console.log('simpleShpangs!!!!!!!!!!!!!!', simpleShpangs);
 
                     pointsGeometry.vertices = [];
@@ -222,6 +202,58 @@ angular.module('app')
                             pointsGeometry.vertices.push(simpleShpangs[i][j]);
                         }
                     }
+                    // var arrayOfPromises = [];
+                    // for (var i = 0.1; i < 6.5; i = i + 0.1) {
+                    //     arrayOfPromises.push(new Promise(function (resolve, reject) {
+                    //         return ModelBuilder.build({
+                    //             Ship: Ship,
+                    //            // initialTimeout: 0,
+                    //             filter: i,
+                    //             different:0,
+                    //             createShape: false,
+                    //             mirrored: true,
+                    //             water: 1.025,
+                    //             group: group,
+                    //             texture: texture
+                    //         }).then(function (res) {
+                    //             resolve();
+                    //         });
+                    //     }));
+
+                    // }
+                    // Promise.all(arrayOfPromises)
+                    //     .then(function (res) {
+                    //         ModelBuilder.build({
+                    //             Ship: Ship,
+                    //             initialTimeout: 0,
+                    //             filter: false,
+                    //             different:0,
+                    //             createShape: true,
+                    //             mirrored: true,
+                    //             water: 1.025,
+                    //             group: group,
+                    //             texture: texture
+                    //         }).then(function (res) {
+                    //             console.log('RESULT', res);
+                    //         });
+                    //     });
+
+                    ModelBuilder.build({
+                        Ship: Ship,
+                        initialTimeout: 0,
+                        filter: 5.2,
+                        different: 0.08,
+                        createShape: true,
+                        mirrored: true,
+                        water: 1.025,
+                        group: group,
+                        texture: texture
+                    }).then(function (res) {
+                        console.log('RESULT', res);
+                    });
+
+
+
 
 
 
@@ -246,7 +278,7 @@ angular.module('app')
                         outArray = [];
                         var i = 0
                         var sortedShapng = _.sortBy(shapg, function (point) {
-                            return  point.y;
+                            return point.y;
                         })
                         var more = _.filter(sortedShapng, function (point) {
                             return vertex.y < point.y;
@@ -260,7 +292,7 @@ angular.module('app')
 
                             var moreDistance = Math.abs(Math.round((more[0].y - vertex.y) * 1e12) / 1e12);
                             var lessDistance = Math.abs(Math.round((less[less.length - 1].y - vertex.y) * 1e12) / 1e12);
-                           
+
                             switch (true) {
                                 case moreDistance.toFixed(3) > lessDistance.toFixed(3):
                                     outArray.push(less[less.length - 1]);
@@ -271,7 +303,7 @@ angular.module('app')
                                 case moreDistance.toFixed(3) === lessDistance.toFixed(3) || (distanceVector(vertex, more[0]) === distanceVector(vertex, less[less.length - 1])):
                                     outArray.push(more[0]);
                                     outArray.push(less[less.length - 1]);
-                                   // console.log('GOVNOOOOOOO')
+                                    // console.log('GOVNOOOOOOO')
                                     break;
 
                                 default:
@@ -288,58 +320,14 @@ angular.module('app')
                         }
 
 
-                      
+
 
 
                         return outArray;
 
                     }
 
-                    // for (var i = 0; i < simpleShpangs.length - 1; i++) {
-                    //     for (var j = 0; j < simpleShpangs[i].length; j++) {
-                    //         var minVectors = minDistanse(simpleShpangs[i][j], simpleShpangs[i + 1]);
-                    //         for (var k = 0; k < minVectors.length; k++) {
-                    //             for (var z = 0; z < minVectors.length; z++) {
-                    //                 var index1 = _.findIndex(pointsGeometry.vertices, function (vector) {
-                    //                     return vector.x === minVectors[k].x && vector.y === minVectors[k].y && vector.z === minVectors[k].z;
-                    //                 });
-                    //                 var index2 = _.findIndex(pointsGeometry.vertices, function (vector) {
-                    //                     return vector.x === minVectors[z].x && vector.y === minVectors[z].y && vector.z === minVectors[z].z;
-                    //                 });
-                    //                 var index3 = _.findIndex(pointsGeometry.vertices, function (vector) {
-                    //                     return vector.x === simpleShpangs[i][j].x && vector.y === simpleShpangs[i][j].y && vector.z === simpleShpangs[i][j].z;
-                    //                 });
-                    //                 pointsGeometry.faces.push(new THREE.Face3(index1, index2, index3));
-                    //             }
-                    //         }
 
-
-
-                    //         // pointsGeometry.faces.push(new THREE.Face3(index3, index2, index1));
-                    //         // pointsGeometry.faces.push(new THREE.Face3(index2, index1, index3));
-
-                    //     }
-                    // }
-
-                    // for (var i = simpleShpangs.length - 1; i > 0; i--) {
-                    //     for (var j = 0; j < simpleShpangs[i].length; j++) {
-                    //         var minVectors = minDistanse(simpleShpangs[i][j], simpleShpangs[i - 1]);
-                    //         for (var k = 0; k < minVectors.length; k++) {
-                    //             for (var z = 0; z < minVectors.length; z++) {
-                    //                 var index1 = _.findIndex(pointsGeometry.vertices, function (vector) {
-                    //                     return vector.x === minVectors[k].x && vector.y === minVectors[k].y && vector.z === minVectors[k].z;
-                    //                 });
-                    //                 var index2 = _.findIndex(pointsGeometry.vertices, function (vector) {
-                    //                     return vector.x === minVectors[z].x && vector.y === minVectors[z].y && vector.z === minVectors[z].z;
-                    //                 });
-                    //                 var index3 = _.findIndex(pointsGeometry.vertices, function (vector) {
-                    //                     return vector.x === simpleShpangs[i][j].x && vector.y === simpleShpangs[i][j].y && vector.z === simpleShpangs[i][j].z;
-                    //                 });
-                    //                 pointsGeometry.faces.push(new THREE.Face3(index1, index2, index3));
-                    //             }
-                    //         }
-                    //     }
-                    // }
 
 
 
@@ -782,9 +770,9 @@ angular.module('app')
                         var PlusShpangs = _.map(spang, function (point) {
 
                             if (point.x !== 0) {
-                              
-                                var sum =   Math.round((initialPlusX + point.x) * 1e12) / 1e12;
-                               
+
+                                var sum = Math.round((initialPlusX + point.x) * 1e12) / 1e12;
+
                                 point.x = sum;
                             }
 
@@ -807,211 +795,211 @@ angular.module('app')
                         return _.reverse(PlusShpangs);
                     });
 
-                    async.eachSeries(simpleShpangs, function (thisShpang, eachCallback1) {
-                        //Initialize iterator for this iteration
-                        var asyncJ = 0;
-                        var middleVolume = 0;
-                        if (asyncI === 0) {
-                            asyncI++;
-                            return eachCallback1();
-                        }
-                        var beforeShapng = simpleShpangs[asyncI - 1];
-                        if (thisShpang.length > beforeShapng.length) {
+                    // async.eachSeries(simpleShpangs, function (thisShpang, eachCallback1) {
+                    //     //Initialize iterator for this iteration
+                    //     var asyncJ = 0;
+                    //     var middleVolume = 0;
+                    //     if (asyncI === 0) {
+                    //         asyncI++;
+                    //         return eachCallback1();
+                    //     }
+                    //     var beforeShapng = simpleShpangs[asyncI - 1];
+                    //     if (thisShpang.length > beforeShapng.length) {
 
-                            async.eachSeries(thisShpang, function (thisPoint, eachCallback2) {
-                                if (asyncJ === 0) {
-                                    asyncJ++;
-                                    return eachCallback2();
-                                }
-                                var beforePoint = thisShpang[asyncJ - 1];
-
-
-                                var beforeShapngIndex = asyncJ - 1;
-                                if (asyncJ >= beforeShapng.length) {
-                                    beforeShapngIndex = beforeShapng.length - 1;
-                                }
-
-                                var bottom = [beforePoint, thisPoint];
-
-                                var centerPoint = vertexCenter(proectionOnShapng(beforePoint, Ship.base[asyncI].ShpangX), proectionOnShapng(thisPoint, Ship.base[asyncI].ShpangX));
-
-                                var minDisArray = minDistanse(centerPoint, beforeShapng, Ship.base[asyncI - 1].ShpangX);
-                             
-                                var head = [minDisArray[0]];
-                                var shape = bottom.concat(head);
-                                // shape.push(proectionX(shape[0]));
-                                // shape.push(proectionX(shape[1]));
-                                // shape.push(proectionX(shape[2]));
-                                // console.log('asyncJ', asyncJ);
-                                // console.log('bottom', bottom);
-                                // console.log('head', head);
-
-                                var volume = getVolume(bottom, head);
-                                middleVolume += volume;
-                                var visible = true;
-                                if (volume === 0) {
-                                    visible = false;
-                                    //console.log('bottom', bottom);
-                                    // console.log('head', head);
-                                } else {
-                                    visible = true;
-                                }
-                              
-                                addShape(shape, initialTimeout, function () {
-                                    if (asyncJ >= beforeShapng.length) {
-
-                                        asyncJ++;
-                                        eachCallback2();
-                                    } else {
-                                        var bottom2 = [beforeShapng[asyncJ - 1], beforeShapng[asyncJ - 0]];
-
-                                        var centerPoint = vertexCenter(proectionOnShapng(beforeShapng[asyncJ - 1], Ship.base[asyncI - 1].ShpangX), proectionOnShapng(beforeShapng[asyncJ - 0], Ship.base[asyncI - 1].ShpangX));
-
-                                        var minDisArray2 = minDistanse(centerPoint, thisShpang, Ship.base[asyncI].ShpangX);
-                                        var head2 = [minDisArray2[0]];
-                                      
-                                        if (minDisArray2[1]) {
-                                            if (minDisArray[0].y !== minDisArray2[1].y) {
-                                               
-                                                head2 = [minDisArray2[1]];
-                                            }
-                                        }
-
-                                        var shape2 = bottom2.concat(head2);
-                                       
-                                        // shape.push(proectionX(shape[0]));
-                                        // shape.push(proectionX(shape[1]));
-                                        // shape.push(proectionX(shape[2]));
-                                        var volume2 = getVolume(bottom2, head2);
-                                        middleVolume += volume2;
-                                        if (volume2 === 0) {
-                                            // console.log('bottom', bottom);
-                                            // console.log('head', head);
-                                            visible = false;
-                                        } else {
-                                            visible = true;
-                                        }
-                                        if (isNaN(middleVolume)) {
-                                            // console.log('NAN bottom', bottom2);
-                                            // console.log('NAN head', head2);
-                                        }
-                                        addShape(shape2, initialTimeout, function () {
-                                            asyncJ++;
-                                            eachCallback2();
-                                        }, mirrored, visible);
-                                    }
+                    //         async.eachSeries(thisShpang, function (thisPoint, eachCallback2) {
+                    //             if (asyncJ === 0) {
+                    //                 asyncJ++;
+                    //                 return eachCallback2();
+                    //             }
+                    //             var beforePoint = thisShpang[asyncJ - 1];
 
 
-                                }, mirrored, visible);
+                    //             var beforeShapngIndex = asyncJ - 1;
+                    //             if (asyncJ >= beforeShapng.length) {
+                    //                 beforeShapngIndex = beforeShapng.length - 1;
+                    //             }
+
+                    //             var bottom = [beforePoint, thisPoint];
+
+                    //             var centerPoint = vertexCenter(proectionOnShapng(beforePoint, Ship.base[asyncI].ShpangX), proectionOnShapng(thisPoint, Ship.base[asyncI].ShpangX));
+
+                    //             var minDisArray = minDistanse(centerPoint, beforeShapng, Ship.base[asyncI - 1].ShpangX);
+
+                    //             var head = [minDisArray[0]];
+                    //             var shape = bottom.concat(head);
+                    //             // shape.push(proectionX(shape[0]));
+                    //             // shape.push(proectionX(shape[1]));
+                    //             // shape.push(proectionX(shape[2]));
+                    //             // console.log('asyncJ', asyncJ);
+                    //             // console.log('bottom', bottom);
+                    //             // console.log('head', head);
+
+                    //             var volume = getVolume(bottom, head);
+                    //             middleVolume += volume;
+                    //             var visible = true;
+                    //             if (volume === 0) {
+                    //                 visible = false;
+                    //                 //console.log('bottom', bottom);
+                    //                 // console.log('head', head);
+                    //             } else {
+                    //                 visible = true;
+                    //             }
+
+                    //             addShape(shape, initialTimeout, function () {
+                    //                 if (asyncJ >= beforeShapng.length) {
+
+                    //                     asyncJ++;
+                    //                     eachCallback2();
+                    //                 } else {
+                    //                     var bottom2 = [beforeShapng[asyncJ - 1], beforeShapng[asyncJ - 0]];
+
+                    //                     var centerPoint = vertexCenter(proectionOnShapng(beforeShapng[asyncJ - 1], Ship.base[asyncI - 1].ShpangX), proectionOnShapng(beforeShapng[asyncJ - 0], Ship.base[asyncI - 1].ShpangX));
+
+                    //                     var minDisArray2 = minDistanse(centerPoint, thisShpang, Ship.base[asyncI].ShpangX);
+                    //                     var head2 = [minDisArray2[0]];
+
+                    //                     if (minDisArray2[1]) {
+                    //                         if (minDisArray[0].y !== minDisArray2[1].y) {
+
+                    //                             head2 = [minDisArray2[1]];
+                    //                         }
+                    //                     }
+
+                    //                     var shape2 = bottom2.concat(head2);
+
+                    //                     // shape.push(proectionX(shape[0]));
+                    //                     // shape.push(proectionX(shape[1]));
+                    //                     // shape.push(proectionX(shape[2]));
+                    //                     var volume2 = getVolume(bottom2, head2);
+                    //                     middleVolume += volume2;
+                    //                     if (volume2 === 0) {
+                    //                         // console.log('bottom', bottom);
+                    //                         // console.log('head', head);
+                    //                         visible = false;
+                    //                     } else {
+                    //                         visible = true;
+                    //                     }
+                    //                     if (isNaN(middleVolume)) {
+                    //                         // console.log('NAN bottom', bottom2);
+                    //                         // console.log('NAN head', head2);
+                    //                     }
+                    //                     addShape(shape2, initialTimeout, function () {
+                    //                         asyncJ++;
+                    //                         eachCallback2();
+                    //                     }, mirrored, visible);
+                    //                 }
 
 
-                            }, function (err) {
-                                if (!err) {
-                                    outerVolume += middleVolume;
-                                    asyncI++;
-                                    eachCallback1();
-                                }
-                            });
-                        } else {
-                            async.eachSeries(beforeShapng, function (thisPoint, eachCallback2) {
-
-                                if (asyncJ === 0) {
-                                    asyncJ++;
-                                    return eachCallback2();
-                                }
-                                var beforePoint = beforeShapng[asyncJ - 1];
-
-                                var thisShpangIndex = asyncJ - 1;
+                    //             }, mirrored, visible);
 
 
-                                if (asyncJ >= thisShpang.length) {
-                                    thisShpangIndex = thisShpang.length - 1;
-                                }
-                                var bottom = [beforePoint, thisPoint];
-                                var centerPoint = vertexCenter(proectionOnShapng(beforePoint, Ship.base[asyncI - 1].ShpangX), proectionOnShapng(thisPoint, Ship.base[asyncI - 1].ShpangX));
+                    //         }, function (err) {
+                    //             if (!err) {
+                    //                 outerVolume += middleVolume;
+                    //                 asyncI++;
+                    //                 eachCallback1();
+                    //             }
+                    //         });
+                    //     } else {
+                    //         async.eachSeries(beforeShapng, function (thisPoint, eachCallback2) {
 
-                                var minDisArray = minDistanse(centerPoint, thisShpang, Ship.base[asyncI - 1].ShpangX);
-                                //   console.log('centerPoint', centerPoint);
-                                //  console.log('minDisArray', minDisArray);
-                                var head = [minDisArray[0]];
-                                var shape = bottom.concat(head);
-                                // shape.push(proectionX(shape[0]));
-                                // shape.push(proectionX(shape[1]));
-                                // shape.push(proectionX(shape[2]));
-                                //  console.log('asyncJ', asyncJ);
-                                //  console.log('bottom', bottom);
-                                //  console.log('head', head);
-                                var volume = getVolume(bottom, head);
-                                middleVolume += volume;
-                                var visible = true;
-                                if (volume === 0) {
-                                    visible = false;
-                                    //  console.log('bottom', bottom);
-                                    //   console.log('head', head);
-                                } else {
-                                    visible = true;
-                                }
+                    //             if (asyncJ === 0) {
+                    //                 asyncJ++;
+                    //                 return eachCallback2();
+                    //             }
+                    //             var beforePoint = beforeShapng[asyncJ - 1];
 
-                                addShape(shape, initialTimeout, function () {
-                                    if (asyncJ >= thisShpang.length) {
-                                        asyncJ++;
-                                        eachCallback2();
-                                    } else {
-                                        var bottom2 = [thisShpang[asyncJ - 1], thisShpang[asyncJ - 0]];
-
-                                        var centerPoint = vertexCenter(proectionOnShapng(thisShpang[asyncJ - 1], Ship.base[asyncI].ShpangX), proectionOnShapng(thisShpang[asyncJ - 0], Ship.base[asyncI].ShpangX));
-
-                                        var minDisArray2 = minDistanse(centerPoint, beforeShapng, Ship.base[asyncI - 1].ShpangX);
-                                        var head2 = [minDisArray2[0]];
-                                      
-                                        if (minDisArray2[1]) {
-                                            if (minDisArray[0].y !== minDisArray2[1].y) {
-                                               
-                                                head2 = [minDisArray2[1]];
-                                            }
-
-                                        }
-                                        var shape2 = bottom2.concat(head2);
-                                        // shape.push(proectionX(shape[0]));
-                                        // shape.push(proectionX(shape[1]));
-                                        // shape.push(proectionX(shape[2]));
-
-                                        var volume2 = getVolume(bottom2, head2);
-                                        middleVolume += volume2;
-                                        if (volume2 === 0) {
-                                            //  console.log('bottom2', bottom);
-                                            //  console.log('head2', head);
-                                            visible = false;
-                                        } else {
-                                            visible = true;
-                                        }
-
-                                        addShape(shape2, initialTimeout, function () {
-                                            asyncJ++;
-                                            eachCallback2();
-                                        }, mirrored, visible);
-                                    }
-
-                                }, mirrored, visible);
+                    //             var thisShpangIndex = asyncJ - 1;
 
 
-                            }, function (err) {
-                                if (!err) {
-                                    outerVolume += middleVolume;
-                                    asyncI++;
-                                    eachCallback1();
-                                }
-                            });
-                        }
+                    //             if (asyncJ >= thisShpang.length) {
+                    //                 thisShpangIndex = thisShpang.length - 1;
+                    //             }
+                    //             var bottom = [beforePoint, thisPoint];
+                    //             var centerPoint = vertexCenter(proectionOnShapng(beforePoint, Ship.base[asyncI - 1].ShpangX), proectionOnShapng(thisPoint, Ship.base[asyncI - 1].ShpangX));
+
+                    //             var minDisArray = minDistanse(centerPoint, thisShpang, Ship.base[asyncI - 1].ShpangX);
+                    //             //   console.log('centerPoint', centerPoint);
+                    //             //  console.log('minDisArray', minDisArray);
+                    //             var head = [minDisArray[0]];
+                    //             var shape = bottom.concat(head);
+                    //             // shape.push(proectionX(shape[0]));
+                    //             // shape.push(proectionX(shape[1]));
+                    //             // shape.push(proectionX(shape[2]));
+                    //             //  console.log('asyncJ', asyncJ);
+                    //             //  console.log('bottom', bottom);
+                    //             //  console.log('head', head);
+                    //             var volume = getVolume(bottom, head);
+                    //             middleVolume += volume;
+                    //             var visible = true;
+                    //             if (volume === 0) {
+                    //                 visible = false;
+                    //                 //  console.log('bottom', bottom);
+                    //                 //   console.log('head', head);
+                    //             } else {
+                    //                 visible = true;
+                    //             }
+
+                    //             addShape(shape, initialTimeout, function () {
+                    //                 if (asyncJ >= thisShpang.length) {
+                    //                     asyncJ++;
+                    //                     eachCallback2();
+                    //                 } else {
+                    //                     var bottom2 = [thisShpang[asyncJ - 1], thisShpang[asyncJ - 0]];
+
+                    //                     var centerPoint = vertexCenter(proectionOnShapng(thisShpang[asyncJ - 1], Ship.base[asyncI].ShpangX), proectionOnShapng(thisShpang[asyncJ - 0], Ship.base[asyncI].ShpangX));
+
+                    //                     var minDisArray2 = minDistanse(centerPoint, beforeShapng, Ship.base[asyncI - 1].ShpangX);
+                    //                     var head2 = [minDisArray2[0]];
+
+                    //                     if (minDisArray2[1]) {
+                    //                         if (minDisArray[0].y !== minDisArray2[1].y) {
+
+                    //                             head2 = [minDisArray2[1]];
+                    //                         }
+
+                    //                     }
+                    //                     var shape2 = bottom2.concat(head2);
+                    //                     // shape.push(proectionX(shape[0]));
+                    //                     // shape.push(proectionX(shape[1]));
+                    //                     // shape.push(proectionX(shape[2]));
+
+                    //                     var volume2 = getVolume(bottom2, head2);
+                    //                     middleVolume += volume2;
+                    //                     if (volume2 === 0) {
+                    //                         //  console.log('bottom2', bottom);
+                    //                         //  console.log('head2', head);
+                    //                         visible = false;
+                    //                     } else {
+                    //                         visible = true;
+                    //                     }
+
+                    //                     addShape(shape2, initialTimeout, function () {
+                    //                         asyncJ++;
+                    //                         eachCallback2();
+                    //                     }, mirrored, visible);
+                    //                 }
+
+                    //             }, mirrored, visible);
 
 
-                    }, function (err) {
-                        if (!err) {
-                            console.log('GREAT!!!!!!!!!! VOLUEM=', outerVolume * 2);
-                            console.log('GREAT!!!!!!!!!!TONN VOLUEM=', outerVolume * 2 * 1.025);
-                            console.log('GROUP', group);
-                        }
-                    });
+                    //         }, function (err) {
+                    //             if (!err) {
+                    //                 outerVolume += middleVolume;
+                    //                 asyncI++;
+                    //                 eachCallback1();
+                    //             }
+                    //         });
+                    //     }
+
+
+                    // }, function (err) {
+                    //     if (!err) {
+                    //         console.log('GREAT!!!!!!!!!! VOLUEM=', outerVolume * 2);
+                    //         console.log('GREAT!!!!!!!!!!TONN VOLUEM=', outerVolume * 2 * 1.025);
+                    //         console.log('GROUP', group);
+                    //     }
+                    // });
 
 
 
