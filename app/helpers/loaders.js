@@ -51,7 +51,7 @@ function TktLoader(ship) {
 
 
     });
-    //=========================ADD BOW to SHAPNGS
+    //=========================ADD BOW to SHAPNGS===========================
     if (OuterObject.Bow.length > 0) {
         var AddShpang = [];
         _.forEach(OuterObject.Bow, function (point) {
@@ -65,8 +65,6 @@ function TktLoader(ship) {
                 OuterObject.shpangs[indexOfShapngWithNeededZ].push(point);
                 OuterObject.shpangs[indexOfShapngWithNeededZ] = _.sortBy(OuterObject.shpangs[indexOfShapngWithNeededZ], 'y');
             }
-
-
         });
 
 
@@ -105,7 +103,7 @@ function TktLoader(ship) {
             OuterObject.shpangs.push(AddShpang2);
         }
     }
-    console.log('OuterObject',OuterObject);
+    console.log('OuterObject', OuterObject);
     OuterObject.shpangs = _.sortBy(OuterObject.shpangs, function (shpang) {
 
         return shpang[0].z;

@@ -9,6 +9,7 @@ var _ = require('lodash');
 var TktLoader = require('./helpers/loaders').TktLoader;
 var async = require('async');
 var ModelBuilder = require('./helpers/modelBuilder');
+var CompartmentBuilder = require('./helpers/BuildCompartment');
 'use strict';
 
 angular.module('app')
@@ -191,7 +192,7 @@ angular.module('app')
                     var Ship = TktLoader(natali);
                     //  Ship.shpangs = simpleShpangs;
                     //simpleShpangs = Ship.shpangs;
-                    console.log('simpleShpangs!!!!!!!!!!!!!!', simpleShpangs);
+                    // console.log('simpleShpangs!!!!!!!!!!!!!!', simpleShpangs);
 
                     pointsGeometry.vertices = [];
 
@@ -203,54 +204,93 @@ angular.module('app')
                         }
                     }
                     // var arrayOfPromises = [];
-                    // for (var i = 0.1; i < 6.5; i = i + 0.1) {
+                    // for (var i = 3; i < 4.5; i = i + 3) {
                     //     arrayOfPromises.push(new Promise(function (resolve, reject) {
                     //         return ModelBuilder.build({
                     //             Ship: Ship,
-                    //            // initialTimeout: 0,
+                    //             initialTimeout: 2000,
                     //             filter: i,
-                    //             different:0,
-                    //             createShape: false,
+                    //             createShape: true,
                     //             mirrored: true,
                     //             water: 1.025,
                     //             group: group,
-                    //             texture: texture
+                    //             texture: texture,
+                    //             weightCenter: new THREE.Vector3()
                     //         }).then(function (res) {
-                    //             resolve();
+                    //             resolve(res);
                     //         });
                     //     }));
 
                     // }
                     // Promise.all(arrayOfPromises)
                     //     .then(function (res) {
-                    //         ModelBuilder.build({
-                    //             Ship: Ship,
-                    //             initialTimeout: 0,
-                    //             filter: false,
-                    //             different:0,
-                    //             createShape: true,
-                    //             mirrored: true,
-                    //             water: 1.025,
-                    //             group: group,
-                    //             texture: texture
-                    //         }).then(function (res) {
-                    //             console.log('RESULT', res);
-                    //         });
+                    //         console.log('res', res);
+
+
+                    //         // ModelBuilder.build({
+                    //         //     Ship: Ship,
+                    //         //     initialTimeout: 0,
+                    //         //     filter: false,
+                    //         //     different:0,
+                    //         //     createShape: true,
+                    //         //     mirrored: true,
+                    //         //     water: 1.025,
+                    //         //     group: group,
+                    //         //     texture: texture
+                    //         // }).then(function (res) {
+                    //         //     console.log('RESULT', res);
+                    //         // });
                     //     });
 
                     ModelBuilder.build({
                         Ship: Ship,
                         initialTimeout: 0,
-                        filter: 5.2,
-                        different: 0.08,
+                        //  filter: 3.2,
+                        // different: 0.1,
                         createShape: true,
                         mirrored: true,
+                        // half: true,
                         water: 1.025,
                         group: group,
                         texture: texture
                     }).then(function (res) {
-                        console.log('RESULT', res);
-                    });
+                        console.log('RES', res);
+                        return CompartmentBuilder.build({
+                            Ship: Ship,
+                            initialTimeout: 10,
+                            //  filter: 3.2,
+                            // different: 0.1,
+                            createShape: true,
+                            mirrored: true,
+                            half: true,
+                            water: 1.025,
+                            group: group,
+                            texture: texture,
+                            compartment: {
+                                start: {
+                                    Z: -34,
+                                    points: [
+                                        new THREE.Vector3(26, 3.3, -33),
+                                        new THREE.Vector3(26, 1.15, -33),
+                                        new THREE.Vector3(0, 3.3, -33),
+                                        new THREE.Vector3(0, 1.15, -33)
+                                    ]
+                                },
+                                end: {
+                                    Z: -16,
+                                    points: [
+                                        new THREE.Vector3(26, 3.3, -16),
+                                        new THREE.Vector3(26, 1.15, -16),
+                                        new THREE.Vector3(0, 3.3, -16),
+                                        new THREE.Vector3(0, 1.15, -16)
+                                    ]
+                                }
+                            }
+                        })
+                    })
+                        .then(function (res) {
+                            console.log('CompartmentBuilder RES', res);
+                        });
 
 
 

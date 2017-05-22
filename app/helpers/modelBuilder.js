@@ -286,6 +286,12 @@ function addShape(points, paramsObject, callback) {
         });
         //points = points.concat(mirroredPoints);
     }
+    if (paramsObject.half) {
+        var halfPoints = _.map(points, function (point) {
+            return proectionX(point);
+        })
+        points = points.concat(halfPoints);
+    }
 
     pointsGeometry.vertices = points;
 
@@ -301,9 +307,11 @@ function addShape(points, paramsObject, callback) {
     var meshGeometry = new THREE.ConvexGeometry(pointsGeometry.vertices);
 
     var meshMaterial = new THREE.MeshLambertMaterial({
-        color: '#5DB03D',
-        opacity: 0,
-        transparent: paramsObject.visible ? false : true
+        color: paramsObject.color ? paramsObject.color : '#5DB03D',
+        opacity: paramsObject.transparent ? 0.5 : 0,
+        transparent: paramsObject.transparent ? true : paramsObject.visible ? false : true,
+        // opacity: 0.5,
+        //transparent: true
     });
 
     if (paramsObject.initialTimeout) {
@@ -435,10 +443,14 @@ function BuildVolume(paramsObject) {
                     }
 
                     addShape(shape, paramsObject, function (massCenter) {
+                        massCenter = ShapeMath.getMassCenter(bottom, head);
+                        // addPoint(massCenter.FirstPyramidMassCenter, paramsObject);
+                        // addPoint(massCenter.SecondPyramidMassCenter, paramsObject);
+                        firstPartMassCenter_X += massCenter.FirstPyramidMassCenter.x * volume.TrapezePyramidVolume + massCenter.SecondPyramidMassCenter.x * volume.TrianglePyramidVolume;
 
-                        firstPartMassCenter_X += massCenter.x * (volume.TrapezePyramidVolume + volume.TrianglePyramidVolume);
-                        firstPartMassCenter_Y += massCenter.y * (volume.TrapezePyramidVolume + volume.TrianglePyramidVolume);
-                        firstPartMassCenter_Z += massCenter.z * (volume.TrapezePyramidVolume + volume.TrianglePyramidVolume);
+                        firstPartMassCenter_Y += massCenter.FirstPyramidMassCenter.y * volume.TrapezePyramidVolume + massCenter.SecondPyramidMassCenter.y * volume.TrianglePyramidVolume;
+
+                        firstPartMassCenter_Z += massCenter.FirstPyramidMassCenter.z * volume.TrapezePyramidVolume + massCenter.SecondPyramidMassCenter.z * volume.TrianglePyramidVolume;
 
                         if (asyncJ >= beforeShapng.length) {
 
@@ -471,9 +483,14 @@ function BuildVolume(paramsObject) {
                             }
 
                             addShape(shape2, paramsObject, function (massCenter2) {
-                                firstPartMassCenter_X += massCenter2.x * (volume2.TrapezePyramidVolume + volume2.TrianglePyramidVolume);
-                                firstPartMassCenter_Y += massCenter2.y * (volume2.TrapezePyramidVolume + volume2.TrianglePyramidVolume);
-                                firstPartMassCenter_Z += massCenter2.z * (volume2.TrapezePyramidVolume + volume2.TrianglePyramidVolume);
+                                massCenter2 = ShapeMath.getMassCenter(bottom2, head2);
+                                // addPoint(massCenter2.FirstPyramidMassCenter, paramsObject);
+                                // addPoint(massCenter2.SecondPyramidMassCenter, paramsObject);
+                                firstPartMassCenter_X += massCenter2.FirstPyramidMassCenter.x * volume.TrapezePyramidVolume + massCenter2.SecondPyramidMassCenter.x * volume.TrianglePyramidVolume;
+
+                                firstPartMassCenter_Y += massCenter2.FirstPyramidMassCenter.y * volume.TrapezePyramidVolume + massCenter.SecondPyramidMassCenter.y * volume.TrianglePyramidVolume;
+
+                                firstPartMassCenter_Z += massCenter2.FirstPyramidMassCenter.z * volume.TrapezePyramidVolume + massCenter2.SecondPyramidMassCenter.z * volume.TrianglePyramidVolume;
 
                                 asyncJ++;
                                 eachCallback2();
@@ -500,12 +517,7 @@ function BuildVolume(paramsObject) {
                     }
                     var beforePoint = beforeShapng[asyncJ - 1];
 
-                    var thisShpangIndex = asyncJ - 1;
 
-
-                    if (asyncJ >= thisShpang.length) {
-                        thisShpangIndex = thisShpang.length - 1;
-                    }
                     var bottom = [beforePoint, thisPoint];
                     var centerPoint = vertexCenter(proectionOnShapng(beforePoint, paramsObject.Ship.base[asyncI - 1].ShpangX), proectionOnShapng(thisPoint, paramsObject.Ship.base[asyncI - 1].ShpangX));
 
@@ -527,11 +539,15 @@ function BuildVolume(paramsObject) {
                     }
 
                     addShape(shape, paramsObject, function (massCenter) {
+                        massCenter = ShapeMath.getMassCenter(bottom, head);
 
-                        firstPartMassCenter_X += massCenter.x * (volume.TrapezePyramidVolume + volume.TrianglePyramidVolume);
-                        firstPartMassCenter_Y += massCenter.y * (volume.TrapezePyramidVolume + volume.TrianglePyramidVolume);
-                        firstPartMassCenter_Z += massCenter.z * (volume.TrapezePyramidVolume + volume.TrianglePyramidVolume);
+                        // addPoint(massCenter.FirstPyramidMassCenter, paramsObject);
+                        // addPoint(massCenter.SecondPyramidMassCenter, paramsObject);
+                        firstPartMassCenter_X += massCenter.FirstPyramidMassCenter.x * volume.TrapezePyramidVolume + massCenter.SecondPyramidMassCenter.x * volume.TrianglePyramidVolume;
 
+                        firstPartMassCenter_Y += massCenter.FirstPyramidMassCenter.y * volume.TrapezePyramidVolume + massCenter.SecondPyramidMassCenter.y * volume.TrianglePyramidVolume;
+
+                        firstPartMassCenter_Z += massCenter.FirstPyramidMassCenter.z * volume.TrapezePyramidVolume + massCenter.SecondPyramidMassCenter.z * volume.TrianglePyramidVolume;
 
 
                         if (asyncJ >= thisShpang.length) {
@@ -566,9 +582,14 @@ function BuildVolume(paramsObject) {
                             }
 
                             addShape(shape2, paramsObject, function (massCenter2) {
-                                firstPartMassCenter_X += massCenter2.x * (volume2.TrapezePyramidVolume + volume2.TrianglePyramidVolume);
-                                firstPartMassCenter_Y += massCenter2.y * (volume2.TrapezePyramidVolume + volume2.TrianglePyramidVolume);
-                                firstPartMassCenter_Z += massCenter2.z * (volume2.TrapezePyramidVolume + volume2.TrianglePyramidVolume);
+                                massCenter2 = ShapeMath.getMassCenter(bottom2, head2);
+                                // addPoint(massCenter2.FirstPyramidMassCenter, paramsObject);
+                                // addPoint(massCenter2.SecondPyramidMassCenter, paramsObject);
+                                firstPartMassCenter_X += massCenter2.FirstPyramidMassCenter.x * volume.TrapezePyramidVolume + massCenter2.SecondPyramidMassCenter.x * volume.TrianglePyramidVolume;
+
+                                firstPartMassCenter_Y += massCenter2.FirstPyramidMassCenter.y * volume.TrapezePyramidVolume + massCenter.SecondPyramidMassCenter.y * volume.TrianglePyramidVolume;
+
+                                firstPartMassCenter_Z += massCenter2.FirstPyramidMassCenter.z * volume.TrapezePyramidVolume + massCenter2.SecondPyramidMassCenter.z * volume.TrianglePyramidVolume;
 
                                 asyncJ++;
                                 eachCallback2();
@@ -613,7 +634,9 @@ function BuildVolume(paramsObject) {
                 resolve({
                     TonnVolume: outerTonn,
                     Volume: outer,
-                    MassCenter: massCenter
+                    MassCenter: massCenter,
+                    filter: paramsObject.filter,
+                    different: paramsObject.different
                 });
             }
         });
@@ -623,6 +646,80 @@ function BuildVolume(paramsObject) {
 function build(paramsObject) {
 
     return new Promise(function (resolve, reject) {
+        console.log('ModelBuilder', paramsObject);
+        //if different we must find mass center of all squeare by filter
+        var defaultPoint = new THREE.Vector3(0, 0, 0);
+        if (paramsObject.different && paramsObject.filter) {
+            var FilteredPlane = _.compact(_.map(paramsObject.Ship.shpangs, function (spang) {
+
+                var midddleShpang = _.filter(spang, function (point) {
+                    return point.y <= paramsObject.filter;
+                });
+
+
+                if (spang[midddleShpang.length] && midddleShpang.length > 0 && midddleShpang.length !== spang.length) {
+                    var proectionPoint = new THREE.Vector3();
+                    proectionPoint.z = spang[midddleShpang.length].z;
+                    proectionPoint.y = paramsObject.filter;
+                    proectionPoint.x = getProectionOnLine(spang[midddleShpang.length], spang[midddleShpang.length - 1], proectionPoint);
+
+                    return proectionPoint;
+                } else {
+                    return false
+                }
+            }));
+            var FilteredPlaneMassCenter_X = 0;
+            var FilteredPlaneMassCenter_Y = 0;
+            var FilteredPlaneMassCenter_Z = 0;
+
+            var FilteredPlaneSquere = 0;
+
+            for (var i = 1; i < FilteredPlane.length; i++) {
+
+                var midddleSqquere = trapezeSqueare(distanceVector(FilteredPlane[i - 1], proectionX(FilteredPlane[i - 1])),
+                    distanceVector(FilteredPlane[i], proectionX(FilteredPlane[i])),
+                    distanceVector(FilteredPlane[i], proectionX(FilteredPlane[i - 1])),
+                    distanceVector(FilteredPlane[i - 1], proectionX(FilteredPlane[i]))
+                );
+
+
+                var middleMassCenter = ShapeMath.trapezeMassCenter([
+                    FilteredPlane[i - 1],
+                    proectionX(FilteredPlane[i - 1])
+                ], [
+                        FilteredPlane[i],
+                        proectionX(FilteredPlane[i])
+                    ]
+                );
+                FilteredPlaneSquere += midddleSqquere;
+
+
+                FilteredPlaneMassCenter_X += middleMassCenter.x * midddleSqquere;
+                FilteredPlaneMassCenter_Y += middleMassCenter.y * midddleSqquere;
+                FilteredPlaneMassCenter_Z += middleMassCenter.z * midddleSqquere;
+
+            }
+            var RealMassCenter_L_X = ShapeMath.FloatMath().divide(FilteredPlaneMassCenter_X, FilteredPlaneSquere);
+            var RealMassCenter_L_Y = ShapeMath.FloatMath().divide(FilteredPlaneMassCenter_Y, FilteredPlaneSquere);
+            var RealMassCenter_L_Z = ShapeMath.FloatMath().divide(FilteredPlaneMassCenter_Z, FilteredPlaneSquere);
+
+            var RealMassCenter_R_X = - RealMassCenter_L_X;
+            var RealMassCenter_R_Y = RealMassCenter_L_Y;
+            var RealMassCenter_R_Z = RealMassCenter_L_Z;
+
+            var RealMassCenter_X = (RealMassCenter_L_X * FilteredPlaneSquere + RealMassCenter_R_X * FilteredPlaneSquere) / (FilteredPlaneSquere * 2);
+            var RealMassCenter_Y = (RealMassCenter_L_Y * FilteredPlaneSquere + RealMassCenter_R_Y * FilteredPlaneSquere) / (FilteredPlaneSquere * 2);
+            var RealMassCenter_Z = (RealMassCenter_L_Z * FilteredPlaneSquere + RealMassCenter_R_Z * FilteredPlaneSquere) / (FilteredPlaneSquere * 2);
+
+            var massCenter = new THREE.Vector3(RealMassCenter_X, RealMassCenter_Y, RealMassCenter_Z);
+            addPoint(massCenter, paramsObject);
+
+            // RESULT!!!!!!!!!!!!!!!!!!!!!!
+            defaultPoint = massCenter
+            console.log('RealFilteredPlaneMassCenter', massCenter);
+        }
+        ////trapezeMassCenter
+
         // at first create reverse array of shpangs
         paramsObject.simpleShpangs = _.compact(_.map(paramsObject.Ship.shpangs, function (spang) {
             var PlusShpangs = spang;
@@ -642,12 +739,14 @@ function build(paramsObject) {
             if (paramsObject.filter) {
                 var filterY = paramsObject.filter;
 
-                var p1 = new THREE.Vector3(0, paramsObject.filter, 1);
-                var p2 = new THREE.Vector3(0, paramsObject.filter, 0);
-                var p3 = new THREE.Vector3(1, paramsObject.filter, 0);
+
+
+                var p1 = new THREE.Vector3(defaultPoint.x, paramsObject.filter, defaultPoint.z + 1);
+                var p2 = new THREE.Vector3(defaultPoint.x, paramsObject.filter, defaultPoint.z);
+                var p3 = new THREE.Vector3(defaultPoint.x + 1, paramsObject.filter, defaultPoint.z);
 
                 if (paramsObject.different) {
-                    // TODO squere center 
+
                     var differentTan = Math.tan(paramsObject.different);
                     var newZ = ShapeMath.FloatMath().multiply(differentTan, 1);
                     p1 = new THREE.Vector3(0, paramsObject.filter + newZ, 1);
@@ -684,6 +783,7 @@ function build(paramsObject) {
         //create model 
         BuildVolume(paramsObject)
             .then(function (result) {
+                result.resultShpangs = paramsObject.simpleShpangs;
                 resolve(result);
             });
     });
@@ -691,3 +791,4 @@ function build(paramsObject) {
 }
 
 exports.build = build;
+exports.minDistanse = minDistanse;
