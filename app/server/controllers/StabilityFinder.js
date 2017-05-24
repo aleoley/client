@@ -1,10 +1,10 @@
 
-var Volume = require('./Volume');
-var ShapeMath = require('./shapeMath').ShapeMath;
+var Volume = require('../../helpers/Volume');
+var ShapeMath = require('../../helpers/shapeMath').ShapeMath;
 var _ = require('lodash');
 var MathJS = require('mathjs');
 var async = require('async');
-var ModelBuilder = require('./modelBuilder');
+var ModelBuilder = require('../../helpers/modelBuilder');
 
 /**
  * 
@@ -35,7 +35,11 @@ function Stabilized(paramsObject) {
                 var minFilter = _.minBy(result, function (res) {
                     return MathJS.abs(res.Volume - paramsObject.searchVolume);
                 });
+
                 return resolve(minFilter);
+            })
+            .catch((err) => {
+                reject(err);
             });
 
 

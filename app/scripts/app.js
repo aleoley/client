@@ -1,6 +1,6 @@
 var path = require('path');
 
-const Languages  = require ('./assets/languages/index');
+const Languages = require('./assets/languages/index');
 
 
 'use strict';
@@ -34,12 +34,12 @@ angular.module('app', [
         function getLanguage(language) {
             return Languages.English;
         }
-        
+
 
         getLanguage();
         $rootScope.Setlanguage = setLanguage;
         $rootScope.getLanguage = getLanguage;
-       
+
     })
     .config(['$routeProvider', function ($routeProvider) {
         // $routeProvider.when('/', {
@@ -54,14 +54,21 @@ angular.module('app', [
 
         // Configure a dark theme with primary foreground yellow
 
-        $mdThemingProvider.theme('docs-dark', 'default')
+        $mdThemingProvider
+            .theme('docs-dark', 'default')
             .primaryPalette('blue')
             .accentPalette('blue')
             //.backgroundPalette('pink')
             .dark();
 
-        $mdThemingProvider.theme('docs-light', 'default')
-            .primaryPalette('blue');
+        $mdThemingProvider
+            .theme('docs-light')
+            .backgroundPalette('blue')
+            .primaryPalette('red')
+            .accentPalette('red')
+
+
+
 
 
     });

@@ -63,6 +63,21 @@
         </md-button>
       </md-input-container>
       <md-input-container>
+        <md-button ng-click="load()" class="md-primary md-raised" ng-click="show()">
+          Load Ship
+        </md-button>
+      </md-input-container>
+      <md-input-container>
+        <md-button ng-click="stabilazed()" class="md-primary md-raised" ng-click="show()">
+          Stabilazed By Filter
+        </md-button>
+      </md-input-container>
+      <md-input-container>
+        <md-button ng-click="build()" class="md-primary md-raised" ng-click="show()">
+          Build
+        </md-button>
+      </md-input-container>
+      <md-input-container>
         <md-button ng-click="toggleLeft()" class="md-raised">
           Toggle Sidenav
         </md-button>
@@ -70,20 +85,12 @@
 
     </md-content>
     <md-content md-theme="docs-dark" flex-gt-md="column" layout-padding class="model">
-      <md-tabs md-dynamic-height md-border-bottom>
-        <md-tab label="2D"  ng-click="show2d()"> 
-          <md-content class="model">
-             <div style="height:500px;width:1280px;" flex id="model2d" class="model">
-            </div>
-          </md-content>
-        </md-tab>
-        <md-tab label="3D" ng-click="show()">
-          <md-content class="model">
-            <div flex id="model" class="model">
-            </div>
-          </md-content>
-        </md-tab>
-      </md-tabs>
+
+      <md-content class="model">
+        <div flex id="model" class="model">
+        </div>
+      </md-content>
+
 
     </md-content>
   </div>

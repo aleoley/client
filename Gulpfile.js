@@ -51,7 +51,10 @@ gulp.task('build', ['copy'], function () {
 
 
 gulp.task('run', function () {
-    childProcess.spawn(electron, ['./app'], { stdio: 'inherit' });
+   
+
+   
+    childProcess.spawn(electron, ['./app'], { stdio: ['inherit'] });
 });
 
 gulp.task('build-electron', function () {
@@ -65,6 +68,6 @@ gulp.task('build-electron', function () {
     //         break;
     //     case 'win32':
     //         console.log('sdf')
-            return release_windows.build();
-   // }
+    return release_windows.build();
+    // }
 });

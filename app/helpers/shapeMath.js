@@ -1,6 +1,8 @@
-var MathJS = require('mathjs');
-
-
+const MathJS = require('mathjs');
+const THREE = require("three");
+var _ = require('lodash');
+var async = require('async');
+var ShapeMath = require('./shapeMath').ShapeMath;
 /**
  * Function for finding Volumu by 8 points in 2 shpangs
  * 

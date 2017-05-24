@@ -1,6 +1,7 @@
 // Module to control application life.
 //var app = require('app');
-var Test = require('./backend/test').Test;
+var Test = require('./server/test').Test;
+const Router = require('./server/Router');
 const { ipcMain, BrowserWindow, app } = require('electron');
 var electron = require('electron');
 // Module to create native browser window.
@@ -43,24 +44,7 @@ app.on('ready', function () {
 
   //ipcMain.addListener
 
-  ipcMain.on('asynchronous-message', function (event, arg) {
-    console.log(arg)  // prints "ping"
-    Test()
-      .then(function () {
-        event.sender.send('asynchronous-reply', 'pong');
-      });
-
-  });
-
-  ipcMain.on('synchronous-message', function (event, arg) {
-    console.log(arg)  // prints "ping"
-    Test()
-      .then(function () {
-        event.returnValue = 'pong';
-      });
-
-  });
-
-
-
+  ipcMain.on('stabilazed_volume', Router.stabilazed_volume);
+  ipcMain.on('load_ship', Router.load_ship);
+  ipcMain.on('build_model', Router.build_model);
 });

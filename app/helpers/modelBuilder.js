@@ -2,6 +2,10 @@ var THREE = require("three");
 var _ = require('lodash');
 var async = require('async');
 var ShapeMath = require('./shapeMath').ShapeMath;
+var OrbitControls = require('../lib/OrbitControls.js');
+require("../lib/ConvexGeometry.js");
+//var Detector = require("../lib/Detector");
+var Stats = require("../lib/stats.min.js");
 
 'use strict';
 
@@ -641,6 +645,7 @@ function BuildVolume(paramsObject) {
                     different: paramsObject.different,
                     filteredMassCenter: paramsObject.filteredMassCenter,
                     FilteredPlaneSquere: paramsObject.FilteredPlaneSquere,
+                    group: paramsObject.group
                 });
             }
         });
@@ -650,6 +655,7 @@ function BuildVolume(paramsObject) {
 function build(paramsObject) {
 
     return new Promise(function (resolve, reject) {
+      //  paramsObject.group = new THREE.Group(paramsObject.group);
         paramsObject.Ship.shpangs = _.map(paramsObject.Ship.shpangs, function (shpang) {
             return _.sortBy(shpang, 'y');
         });
@@ -861,7 +867,10 @@ function build(paramsObject) {
             ]).then(function (result) {
                 //result.resultShpangs = paramsObject.simpleShpangs;
                 resolve(result);
-            })
+            }).catch((err) => {
+                console.log('err');
+                reject(err);
+            });
         } else {
             paramsObject.simpleShpangs = simpleShpangs1;
             //create model 
@@ -869,6 +878,9 @@ function build(paramsObject) {
                 .then(function (result) {
                     //  result.resultShpangs = paramsObject.simpleShpangs;
                     resolve(result);
+                }).catch((err) => {
+                    console.log('err');
+                    reject(err);
                 });
         }
 

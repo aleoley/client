@@ -1,5 +1,5 @@
 
-var ipcRenderer = require('electron').ipcRenderer;
+
 'use strict';
 
 angular.module('app')
@@ -42,12 +42,7 @@ angular.module('app')
 
 
             $scope.openDialog = function ($event) {
-                console.log(ipcRenderer.sendSync('synchronous-message', 'ping')) // prints "pong"
-
-                ipcRenderer.on('asynchronous-reply', function (event, arg) {
-                    console.log(arg) // prints "pong"
-                });
-                ipcRenderer.send('asynchronous-message', 'ping');
+               
 
                 // $mdDialog.show({
                 //     controller: DialogCtrl,

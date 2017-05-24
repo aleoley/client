@@ -268,7 +268,7 @@ function BuildVolume(paramsObject) {
 
                 var outerTonn = outerVolume * 2 * paramsObject.water;
                 var outer = outerVolume * 2;
-
+                console.log('resolve');
                 resolve({
                     TonnVolume: outerTonn,
                     Volume: outer,
@@ -500,17 +500,21 @@ function build(paramsObject) {
                 }, paramsObject)),
             ]).then(function (result) {
                 //result.resultShpangs = paramsObject.simpleShpangs;
-              
+
                 resolve(result);
             })
         } else {
             paramsObject.simpleShpangs = simpleShpangs1;
+            console.log('create model ');
             //create model 
             BuildVolume(paramsObject)
                 .then(function (result) {
                     //  result.resultShpangs = paramsObject.simpleShpangs;
-                  
+
                     resolve(result);
+                })
+                .catch((err) => {
+                    reject(err);
                 });
         }
 
