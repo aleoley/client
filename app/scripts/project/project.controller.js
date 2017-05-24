@@ -1,4 +1,5 @@
 
+var ipcRenderer = require('electron').ipcRenderer;
 'use strict';
 
 angular.module('app')
@@ -6,7 +7,7 @@ angular.module('app')
         function homeController($rootScope, $scope, $q, $mdDialog, $timeout, $mdpDatePicker) {
 
             $scope.language = $rootScope.getLanguage();
-            
+
             $scope.myDate = new Date();
 
             $scope.minDate = new Date(
@@ -41,14 +42,21 @@ angular.module('app')
 
 
             $scope.openDialog = function ($event) {
-                $mdDialog.show({
-                    controller: DialogCtrl,
-                    controllerAs: 'ctrl',
-                    templateUrl: './scripts/templates/dialog.html',
-                    parent: angular.element(document.body),
-                    targetEvent: $event,
-                    clickOutsideToClose: true
-                })
+                console.log(ipcRenderer.sendSync('synchronous-message', 'ping')) // prints "pong"
+
+                ipcRenderer.on('asynchronous-reply', function (event, arg) {
+                    console.log(arg) // prints "pong"
+                });
+                ipcRenderer.send('asynchronous-message', 'ping');
+
+                // $mdDialog.show({
+                //     controller: DialogCtrl,
+                //     controllerAs: 'ctrl',
+                //     templateUrl: './scripts/templates/dialog.html',
+                //     parent: angular.element(document.body),
+                //     targetEvent: $event,
+                //     clickOutsideToClose: true
+                // })
             }
 
             $scope.user = {

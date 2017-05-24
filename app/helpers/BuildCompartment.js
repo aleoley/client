@@ -4,26 +4,27 @@ var _ = require('lodash');
 var async = require('async');
 var ShapeMath = require('./shapeMath').ShapeMath;
 var ModelBuilder = require('./modelBuilder');
+var RandomColors = require('randomcolor')
 
 function buildIntersectPoint(paramsObject, beforePoint, thisPoint, head) {
     // console.log('=====================================================================')
     // console.log('beforePoint', beforePoint)
     // console.log('thisPoint', thisPoint)
     // console.log('head', head)
-    // console.log(' paramsObject.compartment.start.points[0]', paramsObject.compartment.start.points[0])
-    // console.log('paramsObject.compartment.start.points[1]', paramsObject.compartment.start.points[1])
-    // console.log(' paramsObject.compartment.start.points[2]', paramsObject.compartment.start.points[2])
+    // console.log(' paramsObject.compartment.bow.points[0]', paramsObject.compartment.bow.points[0])
+    // console.log('paramsObject.compartment.bow.points[1]', paramsObject.compartment.bow.points[1])
+    // console.log(' paramsObject.compartment.bow.points[2]', paramsObject.compartment.bow.points[2])
     var outerArray = [];
     //-------------------------START find and build compartment points!
     var intersectCompartmentPlane_beforePoint = {};
     var intersectCompartmentPlane_thisPoint = {};
-    if (paramsObject.start) {
+    if (paramsObject.bow) {
         // console.log('START')
         intersectCompartmentPlane_beforePoint = ShapeMath
             .intersectionPlaneLine([
-                paramsObject.compartment.start.points[0],
-                paramsObject.compartment.start.points[1],
-                paramsObject.compartment.start.points[2]
+                paramsObject.compartment.bow.points[0],
+                paramsObject.compartment.bow.points[1],
+                paramsObject.compartment.bow.points[2]
             ],
             [
                 beforePoint,
@@ -31,22 +32,22 @@ function buildIntersectPoint(paramsObject, beforePoint, thisPoint, head) {
             ]);
         intersectCompartmentPlane_thisPoint = ShapeMath
             .intersectionPlaneLine([
-                paramsObject.compartment.start.points[0],
-                paramsObject.compartment.start.points[1],
-                paramsObject.compartment.start.points[2]
+                paramsObject.compartment.bow.points[0],
+                paramsObject.compartment.bow.points[1],
+                paramsObject.compartment.bow.points[2]
             ],
             [
                 thisPoint,
                 head
             ]);
     }
-    if (paramsObject.end) {
+    if (paramsObject.stern) {
         //  console.log('END')
         intersectCompartmentPlane_beforePoint = ShapeMath
             .intersectionPlaneLine([
-                paramsObject.compartment.end.points[0],
-                paramsObject.compartment.end.points[1],
-                paramsObject.compartment.end.points[2]
+                paramsObject.compartment.stern.points[0],
+                paramsObject.compartment.stern.points[1],
+                paramsObject.compartment.stern.points[2]
             ],
             [
                 beforePoint,
@@ -54,9 +55,9 @@ function buildIntersectPoint(paramsObject, beforePoint, thisPoint, head) {
             ]);
         intersectCompartmentPlane_thisPoint = ShapeMath
             .intersectionPlaneLine([
-                paramsObject.compartment.end.points[0],
-                paramsObject.compartment.end.points[1],
-                paramsObject.compartment.end.points[2]
+                paramsObject.compartment.stern.points[0],
+                paramsObject.compartment.stern.points[1],
+                paramsObject.compartment.stern.points[2]
             ],
             [
                 thisPoint,
@@ -64,12 +65,12 @@ function buildIntersectPoint(paramsObject, beforePoint, thisPoint, head) {
             ]);
     }
     //console.log('intersectCompartmentPlane_thisPoint', intersectCompartmentPlane_thisPoint);
-    // if (intersectCompartmentPlane_thisPoint.y <= paramsObject.compartment.start.points[0].y && intersectCompartmentPlane_thisPoint.y > paramsObject.compartment.start.points[1].y) {
+    // if (intersectCompartmentPlane_thisPoint.y <= paramsObject.compartment.bow.points[0].y && intersectCompartmentPlane_thisPoint.y > paramsObject.compartment.bow.points[1].y) {
     if (intersectCompartmentPlane_thisPoint)
         outerArray.push(intersectCompartmentPlane_thisPoint);
     // }
     if (intersectCompartmentPlane_beforePoint)
-        // if (intersectCompartmentPlane_beforePoint.y <= paramsObject.compartment.start.points[0].y && intersectCompartmentPlane_beforePoint.y > paramsObject.compartment.start.points[1].y) {
+        // if (intersectCompartmentPlane_beforePoint.y <= paramsObject.compartment.bow.points[0].y && intersectCompartmentPlane_beforePoint.y > paramsObject.compartment.bow.points[1].y) {
         outerArray.push(intersectCompartmentPlane_beforePoint);
     // }
     // console.log('intersectCompartmentPlane_thisPoint', intersectCompartmentPlane_thisPoint);
@@ -242,12 +243,12 @@ function build(paramsObject) {
         console.log('buildCompartment', paramsObject);
 
         if (paramsObject.compartment) {
-            if (!paramsObject.compartment.start || !paramsObject.compartment.end) {
+            if (!paramsObject.compartment.bow || !paramsObject.compartment.stern) {
                 throw new Error('No All data for building Compartment')
             } else {
                 compartmentShpangs = _.compact(_.filter(paramsObject.Ship.shpangs, function (spang) {
                     if (spang[0]) {
-                        return spang[0].z >= paramsObject.compartment.start.Z && spang[0].z <= paramsObject.compartment.end.Z
+                        return spang[0].z >= paramsObject.compartment.bow.Z && spang[0].z <= paramsObject.compartment.stern.Z
                     } else {
                         return false;
                     }
@@ -256,10 +257,10 @@ function build(paramsObject) {
                 // if (compartmentShpangs.length === 0) {
                 var fisrtShpang = _.findLast(paramsObject.Ship.shpangs, function (shpang) {
 
-                    return shpang[0].z <= paramsObject.compartment.start.Z;
+                    return shpang[0].z <= paramsObject.compartment.bow.Z;
                 });
                 var lastShpang = _.find(paramsObject.Ship.shpangs, function (shpang) {
-                    return shpang[0].z >= paramsObject.compartment.end.Z;
+                    return shpang[0].z >= paramsObject.compartment.stern.Z;
                 });
                 console.log('!!!!!!!!fisrtShpang', fisrtShpang);
                 console.log('!!!!!!!!lastShpang', lastShpang);
@@ -288,15 +289,15 @@ function build(paramsObject) {
             console.log('!!!!!!!!simpleShpangs2', simpleShpangs2);
             Promise.all([
                 buildCompartment(Object.assign({}, {
-                    end: false,
-                    start: true,
+                    bow: true,
+                    stern: false,
                     simpleShpangs: simpleShpangs1,
 
                 },
                     paramsObject)),
                 buildCompartment(Object.assign({}, {
-                    end: true,
-                    start: false,
+                    bow: false,
+                    stern: true,
                     simpleShpangs: simpleShpangs2,
 
                 },
@@ -332,22 +333,15 @@ function build(paramsObject) {
                         //---------------- Start Upper Filter-------------------- 
 
                         var uppreFilter = _.filter(spang, function (point) {
-                            return point.y <= paramsObject.compartment.start.points[0].y;
+                            return point.y <= paramsObject.compartment.bow.points[0].y;
                         });
-                        console.log('uppreFilter', uppreFilter);
+                       
                         if (spang[uppreFilter.length] && uppreFilter.length > 0 && uppreFilter.length !== spang.length) {
-                            p1.y = paramsObject.compartment.start.points[0].y;
-                            p2.y = paramsObject.compartment.start.points[0].y;
-                            p3.y = paramsObject.compartment.start.points[0].y;
-                            console.log('=================start bottomFilter');
-                            console.log('p1', p1);
-                            console.log('p2', p2);
-                            console.log('p3', p3);
-                            console.log('spang[uppreFilter.length]', spang[uppreFilter.length]);
-                            console.log('spang[uppreFilter.length - 1]', spang[uppreFilter.length - 1]);
+                            p1.y = paramsObject.compartment.bow.points[0].y;
+                            p2.y = paramsObject.compartment.bow.points[0].y;
+                            p3.y = paramsObject.compartment.bow.points[0].y;
                             var proectionPoint = ShapeMath.intersectionPlaneLine([p1, p2, p3], [spang[uppreFilter.length], spang[uppreFilter.length - 1]]);
-                            console.log('UpperPoint', proectionPoint);
-                            console.log('=================end bottomFilter');
+                            
                             UpperPoint = proectionPoint;
 
                         }
@@ -356,31 +350,24 @@ function build(paramsObject) {
                         //---------------- Start Bottom Filter--------------------
 
                         var bottomFilter = _.filter(spang, function (point) {
-                            return point.y >= paramsObject.compartment.start.points[1].y;
+                            return point.y >= paramsObject.compartment.bow.points[1].y;
                         });
                         var underBottomIndex = _.findLastIndex(spang, function (point) {
-                            return point.y <= paramsObject.compartment.start.points[1].y;
+                            return point.y <= paramsObject.compartment.bow.points[1].y;
                         });
-                        console.log('bottomFilter', bottomFilter);
-                        console.log('underBottomIndex', underBottomIndex);
+                       
                         if (bottomFilter.length > 0 && spang[underBottomIndex]) {
-                            p1.y = paramsObject.compartment.start.points[1].y;
-                            p2.y = paramsObject.compartment.start.points[1].y;
-                            p3.y = paramsObject.compartment.start.points[1].y;
-                            console.log('=================start bottomFilter');
-                            console.log('p1', p1);
-                            console.log('p2', p2);
-                            console.log('p3', p3);
-                            console.log('bottomFilter[0]', bottomFilter[0]);
-                            console.log('spang[underBottomIndex]', spang[underBottomIndex]);
+                            p1.y = paramsObject.compartment.bow.points[1].y;
+                            p2.y = paramsObject.compartment.bow.points[1].y;
+                            p3.y = paramsObject.compartment.bow.points[1].y;
+                           
                             var proectionPoint = ShapeMath.intersectionPlaneLine([p1, p2, p3], [bottomFilter[0], spang[underBottomIndex]]);
-                            console.log('BottomPoint', proectionPoint);
-                            console.log('=================end bottomFilter');
+                            
                             BottomPoint = proectionPoint;
                         }
                         //---------------- End Bottom Filter-------------------- 
                         midddleShpang = _.filter(spang, function (point) {
-                            return point.y <= paramsObject.compartment.start.points[0].y && point.y >= paramsObject.compartment.start.points[1].y;
+                            return point.y <= paramsObject.compartment.bow.points[0].y && point.y >= paramsObject.compartment.bow.points[1].y;
                         });
                         if (UpperPoint) {
                             midddleShpang.push(UpperPoint);
@@ -408,14 +395,14 @@ function build(paramsObject) {
 
                     console.log('!!!!!!!!compartmentShpangs', compartmentShpangs);
                     console.log('!!!!!!!!volumeShpangs', volumeShpangs);
-                    //paramsObject.filter = paramsObject.compartment.start.points[0].y;
+                    //paramsObject.filter = paramsObject.compartment.bow.points[0].y;
                     paramsObject.Ship.shpangs = volumeShpangs;
-                    paramsObject.color = '#251C35';
+                    paramsObject.color = RandomColors();
                     paramsObject.initialPlusX = false;
                     paramsObject.mirrored = false;
                     paramsObject.filter = false;
                     //  paramsObject.transparent = true;
-                    paramsObject.initialTimeout = 100;
+                   // paramsObject.initialTimeout = 10;
                     return ModelBuilder.build(paramsObject);
                 })
                 .then(function (result) {

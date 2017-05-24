@@ -629,14 +629,18 @@ function BuildVolume(paramsObject) {
                 var RealMassCenter_Z = (RealMassCenter_L_Z * outerVolume + RealMassCenter_R_Z * outerVolume) / outer;
 
                 var massCenter = new THREE.Vector3(RealMassCenter_X, RealMassCenter_Y, RealMassCenter_Z);
+                console.log('massCenter', massCenter);
                 addPoint(massCenter, paramsObject);
+
 
                 resolve({
                     TonnVolume: outerTonn,
                     Volume: outer,
                     MassCenter: massCenter,
                     filter: paramsObject.filter,
-                    different: paramsObject.different
+                    different: paramsObject.different,
+                    filteredMassCenter: paramsObject.filteredMassCenter,
+                    FilteredPlaneSquere: paramsObject.FilteredPlaneSquere,
                 });
             }
         });
@@ -646,10 +650,16 @@ function BuildVolume(paramsObject) {
 function build(paramsObject) {
 
     return new Promise(function (resolve, reject) {
+        paramsObject.Ship.shpangs = _.map(paramsObject.Ship.shpangs, function (shpang) {
+            return _.sortBy(shpang, 'y');
+        });
+        if (!paramsObject.different) {
+            paramsObject.different = 0;
+        }
         console.log('ModelBuilder', paramsObject);
         //if different we must find mass center of all squeare by filter
         var defaultPoint = new THREE.Vector3(0, 0, 0);
-        if (paramsObject.different && paramsObject.filter) {
+        if ((paramsObject.different || paramsObject.different === 0) && paramsObject.filter) {
             var FilteredPlane = _.compact(_.map(paramsObject.Ship.shpangs, function (spang) {
 
                 var midddleShpang = _.filter(spang, function (point) {
@@ -716,12 +726,14 @@ function build(paramsObject) {
 
             // RESULT!!!!!!!!!!!!!!!!!!!!!!
             defaultPoint = massCenter
-            console.log('RealFilteredPlaneMassCenter', massCenter);
+            paramsObject.filteredMassCenter = massCenter;
+            paramsObject.FilteredPlaneSquere = FilteredPlaneSquere;
+            // console.log('RealFilteredPlaneMassCenter', massCenter);
         }
         ////trapezeMassCenter
 
         // at first create reverse array of shpangs
-        paramsObject.simpleShpangs = _.compact(_.map(paramsObject.Ship.shpangs, function (spang) {
+        var simpleShpangs1 = _.compact(_.map(paramsObject.Ship.shpangs, function (spang) {
             var PlusShpangs = spang;
             // add initialPlusX if exists
             if (paramsObject.initialPlusX) {
@@ -745,7 +757,7 @@ function build(paramsObject) {
                 var p2 = new THREE.Vector3(defaultPoint.x, paramsObject.filter, defaultPoint.z);
                 var p3 = new THREE.Vector3(defaultPoint.x + 1, paramsObject.filter, defaultPoint.z);
 
-                if (paramsObject.different) {
+                if (paramsObject.different || paramsObject.different === 0) {
 
                     var differentTan = Math.tan(paramsObject.different);
                     var newZ = ShapeMath.FloatMath().multiply(differentTan, 1);
@@ -762,11 +774,6 @@ function build(paramsObject) {
                 if (spang[midddleShpang.length] && midddleShpang.length > 0 && midddleShpang.length !== spang.length) {
 
                     var proectionPoint = ShapeMath.intersectionPlaneLine([p1, p2, p3], [spang[midddleShpang.length], spang[midddleShpang.length - 1]]);
-                    // var proectionPoint = new THREE.Vector3();
-                    //  proectionPoint.z = spang[midddleShpang.length].z;
-                    //  proectionPoint.y = paramsObject.filter;
-                    //  proectionPoint.x = getProectionOnLine(spang[midddleShpang.length], spang[midddleShpang.length - 1], proectionPoint);
-                    //  console.log('proectionPoint', proectionPoint);
                     midddleShpang.push(proectionPoint);
                 }
 
@@ -780,12 +787,92 @@ function build(paramsObject) {
 
         }));
 
-        //create model 
-        BuildVolume(paramsObject)
-            .then(function (result) {
-                result.resultShpangs = paramsObject.simpleShpangs;
+        if (paramsObject.UpDown) {
+            var simpleShpangs2 = _.compact(_.map(paramsObject.Ship.shpangs, function (spang) {
+                var PlusShpangs = spang;
+                // add initialPlusX if exists
+                if (paramsObject.initialPlusX) {
+                    PlusShpangs = _.map(spang, function (point) {
+                        if (point.x !== 0) {
+                            var sum = Math.round((initialPlusX + point.x) * 1e12) / 1e12;
+                            point.x = sum;
+                        }
+
+                        return point;
+                    });
+                }
+                // filtered if exists
+                var midddleShpang = PlusShpangs;
+                if (paramsObject.filter) {
+                    var filterY = paramsObject.filter;
+
+                    var p1 = new THREE.Vector3(defaultPoint.x, paramsObject.filter, defaultPoint.z + 1);
+                    var p2 = new THREE.Vector3(defaultPoint.x, paramsObject.filter, defaultPoint.z);
+                    var p3 = new THREE.Vector3(defaultPoint.x + 1, paramsObject.filter, defaultPoint.z);
+
+                    if (paramsObject.different || paramsObject.different === 0) {
+
+                        var differentTan = Math.tan(paramsObject.different);
+                        var newZ = ShapeMath.FloatMath().multiply(differentTan, 1);
+                        p1 = new THREE.Vector3(0, ShapeMath.FloatMath().add(paramsObject.filter, newZ), 1);
+                        filterY = ShapeMath.returnYbyLine(p1, p2, spang[0].z);
+                    }
+
+
+
+                    midddleShpang = _.filter(PlusShpangs, function (point) {
+                        return point.y >= filterY;
+                    });
+                    var underBottomIndex = _.findLastIndex(PlusShpangs, function (point) {
+                        return point.y <= filterY;
+                    });
+
+                    if (spang[underBottomIndex] && midddleShpang.length > 0 && midddleShpang.length !== spang.length) {
+
+                        var proectionPoint = ShapeMath.intersectionPlaneLine([p1, p2, p3], [spang[underBottomIndex], midddleShpang[0]]);
+                        midddleShpang.push(proectionPoint);
+                    }
+
+                }
+                midddleShpang = _.sortBy(midddleShpang, function (point) {
+                    return point.y;
+                });
+                // console.log('midddleShpang!!!!!!!!!!!!!!!!!!!!!!!!!', midddleShpang);
+                if (midddleShpang.length > 0) {
+                    return _.reverse(midddleShpang);
+                } else {
+                    return false;
+                }
+
+            }));
+            //console.log('simpleShpangs1', simpleShpangs1);
+            // console.log('simpleShpangs2', simpleShpangs2);
+            Promise.all([
+                BuildVolume(Object.assign({}, {
+                    initialTimeout: 10,
+                    simpleShpangs: simpleShpangs1,
+                    color: '#770406'
+                }, paramsObject)),
+                BuildVolume(Object.assign({}, {
+                    initialTimeout: 100,
+                    color: '#51565e',
+                    simpleShpangs: simpleShpangs2
+                }, paramsObject)),
+            ]).then(function (result) {
+                //result.resultShpangs = paramsObject.simpleShpangs;
                 resolve(result);
-            });
+            })
+        } else {
+            paramsObject.simpleShpangs = simpleShpangs1;
+            //create model 
+            BuildVolume(paramsObject)
+                .then(function (result) {
+                    //  result.resultShpangs = paramsObject.simpleShpangs;
+                    resolve(result);
+                });
+        }
+
+
     });
 
 }

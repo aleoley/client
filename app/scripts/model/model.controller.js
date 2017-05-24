@@ -2,7 +2,7 @@ var THREE = require("three");
 var OrbitControls = require("./node_modules/three.js/examples/js/controls/OrbitControls.js");
 require("./node_modules/three.js/examples/js/geometries/ConvexGeometry.js");
 var Detector = require("./node_modules/three.js/examples/js/Detector");
-require("./node_modules/three.js/examples/js/libs/stats.min.js");
+var Stats = require("./node_modules/three.js/examples/js/libs/stats.min.js");
 var shpangs = require('./sheapTest.js');
 var natali = require('./natali.js').natali;
 var _ = require('lodash');
@@ -10,6 +10,7 @@ var TktLoader = require('./helpers/loaders').TktLoader;
 var async = require('async');
 var ModelBuilder = require('./helpers/modelBuilder');
 var CompartmentBuilder = require('./helpers/BuildCompartment');
+var StabilityFinder = require('./helpers/StabilityFinder');
 'use strict';
 
 angular.module('app')
@@ -45,7 +46,9 @@ angular.module('app')
 
 
                 if (!Detector.webgl) Detector.addGetWebGLMessage();
-
+                var mouse = new THREE.Vector2(), INTERSECTED;
+                var radius = 100, theta = 0;
+                var raycaster = new THREE.Raycaster();
                 init();
                 animate();
 
@@ -203,902 +206,73 @@ angular.module('app')
                             pointsGeometry.vertices.push(simpleShpangs[i][j]);
                         }
                     }
-                    // var arrayOfPromises = [];
-                    // for (var i = 3; i < 4.5; i = i + 3) {
-                    //     arrayOfPromises.push(new Promise(function (resolve, reject) {
-                    //         return ModelBuilder.build({
+
+                   // var shiipGroup = new THREE.Group();
+                    // ModelBuilder.build({
+                    //     Ship: Ship,
+                    //     initialTimeout: 0,
+                    //     filter: 3.3,
+                    //     different: 0.0323,
+                    //     createShape: true,
+                    //     mirrored: true,
+                    //     // half: true,
+                    //     water: 1.025,
+                    //     group: shiipGroup,
+                    //     UpDown: true,
+                    //     texture: texture
+                    // }).then(function (res) {
+                    //     scene.add(shiipGroup);
+                    //     console.log('RES', res);
+                    //     console.log('Ship.compartments[3]', Ship.compartments[3]);
+                    //     return Promise.all[
+                    //         CompartmentBuilder.build({
                     //             Ship: Ship,
-                    //             initialTimeout: 2000,
-                    //             filter: i,
+                    //             initialTimeout: 1000,
+                    //             //  filter: 3.2,
+                    //             // different: 0.1,
                     //             createShape: true,
                     //             mirrored: true,
+                    //             half: true,
                     //             water: 1.025,
                     //             group: group,
                     //             texture: texture,
-                    //             weightCenter: new THREE.Vector3()
-                    //         }).then(function (res) {
-                    //             resolve(res);
-                    //         });
-                    //     }));
+                    //             compartment: Ship.compartments[1]
+                    //         })
 
-                    // }
-                    // Promise.all(arrayOfPromises)
+                    //     ]
+                    // })
                     //     .then(function (res) {
-                    //         console.log('res', res);
-
-
-                    //         // ModelBuilder.build({
-                    //         //     Ship: Ship,
-                    //         //     initialTimeout: 0,
-                    //         //     filter: false,
-                    //         //     different:0,
-                    //         //     createShape: true,
-                    //         //     mirrored: true,
-                    //         //     water: 1.025,
-                    //         //     group: group,
-                    //         //     texture: texture
-                    //         // }).then(function (res) {
-                    //         //     console.log('RESULT', res);
-                    //         // });
-                    //     });
-
-                    ModelBuilder.build({
+                    //         console.log('res!!!!!!!!1', res);
+                    //     })
+                    // raycaster = new THREE.Raycaster();
+                    StabilityFinder.Stabilized({
                         Ship: Ship,
-                        initialTimeout: 0,
-                        //  filter: 3.2,
-                        // different: 0.1,
-                        createShape: true,
-                        mirrored: true,
-                        // half: true,
+                        searchVolume: Ship.Weight / 1.025,
+                        step: 0.1,
                         water: 1.025,
-                        group: group,
-                        texture: texture
                     }).then(function (res) {
-                        console.log('RES', res);
-                        return CompartmentBuilder.build({
+                        console.log('====Res====', res);
+                        ModelBuilder.build({
                             Ship: Ship,
-                            initialTimeout: 10,
-                            //  filter: 3.2,
-                            // different: 0.1,
+                            initialTimeout: 0,
+                            filter: res.h,
+                           // different: 0.0323,
                             createShape: true,
                             mirrored: true,
-                            half: true,
+                            // half: true,
                             water: 1.025,
                             group: group,
-                            texture: texture,
-                            compartment: {
-                                start: {
-                                    Z: -34,
-                                    points: [
-                                        new THREE.Vector3(26, 3.3, -33),
-                                        new THREE.Vector3(26, 1.15, -33),
-                                        new THREE.Vector3(0, 3.3, -33),
-                                        new THREE.Vector3(0, 1.15, -33)
-                                    ]
-                                },
-                                end: {
-                                    Z: -16,
-                                    points: [
-                                        new THREE.Vector3(26, 3.3, -16),
-                                        new THREE.Vector3(26, 1.15, -16),
-                                        new THREE.Vector3(0, 3.3, -16),
-                                        new THREE.Vector3(0, 1.15, -16)
-                                    ]
-                                }
-                            }
+                            UpDown: true,
+                            texture: texture
                         })
-                    })
-                        .then(function (res) {
-                            console.log('CompartmentBuilder RES', res);
-                        });
-
-
-
-
-
-
-
-                    /**
-                     * Function for Calculating distance 
-                     */
-                    function distanceVector(v1, v2) {
-                        var dx = v1.x - v2.x;
-                        var dy = v1.y - v2.y;
-                        var dz = v1.z - v2.z;
-
-                        return Math.sqrt(dx * dx + dy * dy + dz * dz);
-                    }
-
-                    /**
-                     * This function must return only 2 vertex with min distanse to current
-                     */
-                    function minDistanse(vertex, shapg, shpangX) {
-
-
-                        outArray = [];
-                        var i = 0
-                        var sortedShapng = _.sortBy(shapg, function (point) {
-                            return point.y;
-                        })
-                        var more = _.filter(sortedShapng, function (point) {
-                            return vertex.y < point.y;
-                        });
-                        var less = _.filter(sortedShapng, function (point) {
-                            return vertex.y >= point.y;
-                        });
-
-                        if (more.length > 0 && less.length > 0) {
-
-
-                            var moreDistance = Math.abs(Math.round((more[0].y - vertex.y) * 1e12) / 1e12);
-                            var lessDistance = Math.abs(Math.round((less[less.length - 1].y - vertex.y) * 1e12) / 1e12);
-
-                            switch (true) {
-                                case moreDistance.toFixed(3) > lessDistance.toFixed(3):
-                                    outArray.push(less[less.length - 1]);
-                                    break;
-                                case moreDistance.toFixed(3) < lessDistance.toFixed(3):
-                                    outArray.push(more[0]);
-                                    break;
-                                case moreDistance.toFixed(3) === lessDistance.toFixed(3) || (distanceVector(vertex, more[0]) === distanceVector(vertex, less[less.length - 1])):
-                                    outArray.push(more[0]);
-                                    outArray.push(less[less.length - 1]);
-                                    // console.log('GOVNOOOOOOO')
-                                    break;
-
-                                default:
-                                    break;
-                            }
-
-                        } else {
-                            if (less.length > 0) {
-                                outArray.push(less[less.length - 1]);
-                            }
-                            if (more.length > 0) {
-                                outArray.push(more[0]);
-                            }
-                        }
-
-
-
-
-
-                        return outArray;
-
-                    }
-
-
-
-
-
-                    /**
-                     * Function for finding Volumu by 8 points in 2 shpangs
-                     * 
-                     * //===========bottom============
-                        //
-                        // bottom[0]          bottom[3]
-                        //        |           |
-                        //        |           |
-                        //        |           |
-                        //        |___________|
-                        // bottom[1]          bottom[2]
-                        //
-                    
-                    
-                        //=============top============
-                        //
-                        //    top[0]          top[3]
-                        //        |           |
-                        //        |           |
-                        //        |           |
-                        //        |___________|
-                        //    top[1]          top[2]
-                    
-                    
-                     * Volume is V= 1/3*(S1+sqrt(S1*S2)+S2)
-                     * 
-                     */
-                    function Volume(bottom, top) {
-
-                        //default Existings check
-
-                        if (bottom.length !== 4) {
-                            console.log('Havent Neddet points in bottom')
-                            return;
-                        }
-                        if (top.length !== 4) {
-                            console.log('Havent Neddet points in top')
-                            return;
-                        }
-
-
-                        ///Length Check 
-                        var b0 = bottom[0],
-                            b1 = bottom[1],
-                            b2 = bottom[2],
-                            b3 = bottom[3];
-
-                        var t0 = top[0],
-                            t1 = top[1],
-                            t2 = top[2],
-                            t3 = top[3];
-
-                        var bottomHeight1 = distanceVector(b0, b1),
-                            bottomHeight2 = distanceVector(b2, b3),
-
-                            bottomWidth1 = distanceVector(b1, b2),
-                            bottomWidth2 = distanceVector(b0, b3);
-
-                        var topHeight1 = distanceVector(t0, t1),
-                            topHeight2 = distanceVector(t2, t3),
-
-                            topWidth1 = distanceVector(t1, t2),
-                            topWidth2 = distanceVector(t0, t3);
-
-
-
-                        if (bottomHeight1 !== bottomHeight2 || topHeight1 !== topHeight2) {
-                            console.log('The height is different');
-                            return;
-                        }
-
-                        var S1 = trapezeSqueare(bottomHeight1, bottomHeight2, bottomWidth1, bottomWidth2);
-                        var S2 = trapezeSqueare(topHeight1, topHeight2, topWidth1, topWidth2);
-
-
-
-
-
-
-                    }
-
-                    function getVolume(bottom, head) {
-
-                        //botom must have lenght=2
-                        if (bottom.length !== 2) {
-                            return;
-                        }
-
-                        //head must have lenght=1 
-                        if (head.length !== 1) {
-                            return;
-                        }
-
-                        // build proections
-                        bottom.push(proectionX(bottom[0]));
-                        bottom.push(proectionX(bottom[1]));
-                        head.push(proectionX(head[0]));
-
-                        // h must be fixed by default
-                        var vectorAH = new THREE.Vector3(0, 0, bottom[0].z);
-                        var vectorBH = new THREE.Vector3(0, 0, head[0].z);
-                        var fixedH = distanceVector(vectorAH, vectorBH);
-
-                        var buttomA = distanceVector(bottom[0], bottom[2]);
-                        var buttomB = distanceVector(bottom[1], bottom[3]);
-                        var buttomC = distanceVector(bottom[0], bottom[1]);
-                        var buttomD = distanceVector(bottom[2], bottom[3]);
-                        // console.log('buttomA!!!', buttomA);
-                        // console.log('buttomB!!!', buttomB);
-                        // console.log('buttomC!!!', buttomC);
-                        // console.log('buttomD!!!', buttomD);
-
-
-                        var triangleA = distanceVector(bottom[2], bottom[3]);
-                        var triangleB = distanceVector(head[1], bottom[3]);
-                        var triangleC = distanceVector(bottom[2], head[1]);
-                        // console.log('triangleA!!!', triangleA);
-                        // console.log('triangleB!!!', triangleB);
-                        // console.log('triangleC!!!', triangleC);
-
-                        var trapezeSqueareV1 = trapezeSqueare(buttomA, buttomB, buttomC, buttomD);
-                        var triangleSqueareV2 = triangleSqueare(triangleA, triangleB, triangleC)
-                        // console.log('trapezeSqueareV1!!!', trapezeSqueareV1);
-                        // console.log('triangleSqueareV2!!!', triangleSqueareV2);
-                        var pyramid2H = distanceVector(head[0], head[1]);
-
-                        var V1 = pyramidVolume(trapezeSqueareV1, fixedH);
-                        var V2 = pyramidVolume(triangleSqueareV2, pyramid2H);
-
-                        return V1 + V2;
-                    }
-
-                    function proectionX(vector) {
-                        var proectionVector = Object.assign({}, vector);
-                        proectionVector.x = 0;
-                        return new THREE.Vector3(proectionVector.x, proectionVector.y, proectionVector.z);
-                    }
-
-                    function proectionOnShapng(point, ShpangX) {
-                        return new THREE.Vector3(point.x, point.y, ShpangX);
-                    };
-
-                    //=================================START SQUEARS================================
-
-
-                    /**
-                     * function for finding trapeze Squeare
-                     * 
-                     * Squeare is 1/2 * (a + b) * h
-                     * 
-                     */
-                    function trapezeSqueare(a, b, c, d) {
-                        // h is Math.sqrt(c*c - (a-b)*(a-b) +c*c - d*d )
-                        if (b === c && a === 0 && d === 0) {
-                            return 0;
-                        }
-                        if (a > b) {
-
-                            var m = b;
-                            b = a;
-                            a = m;
-                        }
-                        var in1 = ((a - b) * (a - b) + c * c - d * d);
-                        var ab2 = 2 * (a - b);
-                        if (ab2 === 0) {
-                            return a * c;
-                        }
-                        var ab22 = (in1 / ab2) * (in1 / ab2);
-
-
-
-                        var h = Math.sqrt(c * c - ab22);
-                        var squeare = (h * (a + b)) / 2;
-
-                        if (isNaN(squeare)) {
-
-                            squeare = 0;
-
-                        }
-
-                        return squeare;
-                    }
-
-
-                    /**
-                     * function for finding triangle Squeare
-                     * 
-                     * 
-                     * Squeare is 1/2 * a * h
-                     * 
-                     */
-                    function triangleSqueare(a, b, c) {
-
-                        var p = ((a + b + c)) / 2;
-
-
-                        return Math.sqrt(p * (p - a) * (p - b) * (p - c));
-
-
-                    }
-
-                    //===================================END SQUEARS==================================
-
-
-
-                    //=================================START VOLUEM===================================
-
-                    /**
-                     * Pyramid Volume
-                     * 
-                     * Volume is 1/3 * h
-                     * or h * bottomS
-                     * 
-                     */
-                    function pyramidVolume(bottomS, h) {
-                        return 1 / 3 * h * bottomS;
-                    }
-                    function prismaVolume(bottomS, h) {
-                        return h * bottomS;
-                    }
-
-                    /**
-                     * Trancated Pyramid Volume
-                     * 
-                     * Volume is V= 1/3 * (S1 + sqrt(S1 * S2) + S2)
-                     * 
-                     */
-                    function trancatedPyramidVolume(S1, S2, h) {
-                        var V = 0;
-
-                        return ((S1 + Math.sqrt(S1 * S2) + S2)) / 3;
-
-                    }
-
-                    /**
-                     * Parallelogram Volume
-                     */
-                    function parallelogramVolume(a, b, c) {
-                        return a * b * c;
-                    }
-
-
-
-                    //=================================END VOLUEM================================
-
-
-
-
-
-
-
-
-
-
-                    var pointsMaterial = new THREE.PointsMaterial({
-                        color: 0x0080ff,
-                        map: texture,
-                        size: 2,
-                        alphaTest: 0.5
-                    });
-                    var points = new THREE.Points(pointsGeometry, pointsMaterial);
-                    // group.add(points);
-                    // convex hull
-                    var meshMaterial = new THREE.MeshLambertMaterial({
-                        color: 0x0080ff,
-                        opacity: 0.3,
-                        transparent: true
-                    });
-                    console.log('pointsGeometry', pointsGeometry);
-                    //var meshGeometry = new THREE.ConvexGeometry(pointsGeometry.vertices, faces);
-                    var meshGeometry = pointsGeometry;
-
-
-                    mesh = new THREE.Mesh(meshGeometry, meshMaterial);
-                    mesh.material.side = THREE.BackSide; // back faces
-                    mesh.renderOrder = 0;
-                    group.add(mesh);
-                    mesh = new THREE.Mesh(meshGeometry, meshMaterial.clone());
-                    mesh.material.side = THREE.FrontSide; // front faces
-                    mesh.renderOrder = 1;
-                    group.add(mesh);
-
-
-                    //-------------=================SHAPE 2 ==============-----------------
-                    // var pointsGeometry2 = new THREE.Geometry();
-
-                    // var Shape2 = [
-
-
-                    //     new THREE.Vector3(2, 6, -15), //0
-                    //     new THREE.Vector3(1, 0, -15), //1
-                    //     new THREE.Vector3(0, 6, -15), //2
-                    //     new THREE.Vector3(0, 0, -15), //3
-
-                    //     new THREE.Vector3(9, 3, -3),  //4
-                    //     // new THREE.Vector3(6, 0, -3),  //5 
-                    //     new THREE.Vector3(0, 3, -3),  //6
-                    //     //  new THREE.Vector3(0, 0, -3),  //7
-
-
-
-                    // ];
-                    // pointsGeometry2.vertices = Shape2;
-
-                    // var pointsMaterial2 = new THREE.PointsMaterial({
-                    //     color: '#FC636B',
-                    //     map: texture,
-                    //     size: 3,
-                    //     alphaTest: 0.6
-                    // });
-                    // var points2 = new THREE.Points(pointsGeometry2, pointsMaterial2);
-                    // group.add(points2);
-
-                    // var meshGeometry2 = new THREE.ConvexGeometry(pointsGeometry2.vertices);
-
-                    // var meshMaterial2 = new THREE.MeshLambertMaterial({
-                    //     color: '#FC636B',
-                    //     opacity: 0.5,
-                    //     transparent: true
-                    // });
-                    // mesh2 = new THREE.Mesh(meshGeometry2, meshMaterial2);
-                    // mesh2.material.side = THREE.BackSide; // back faces
-                    // mesh2.renderOrder = 0;
-                    // //   group.add(mesh2);
-                    // mesh2 = new THREE.Mesh(meshGeometry2, meshMaterial2.clone());
-                    // mesh2.material.side = THREE.FrontSide; // front faces
-                    // mesh2.renderOrder = 1;
-                    //  group.add(mesh2);
-
-                    //-------------=================SHAPE 3 ==============-----------------
-                    var pointsGeometry3 = new THREE.Geometry();
-
-                    var Shape3 = [
-
-
-                        // new THREE.Vector3(2, 6, -15), //0
-                        new THREE.Vector3(1, 0, -15), //1
-                        //  new THREE.Vector3(0, 6, -15), //2
-                        new THREE.Vector3(0, 0, -15), //3
-
-                        new THREE.Vector3(6, 3, 0),  //4
-                        new THREE.Vector3(6, 0, 0), //5 
-                        new THREE.Vector3(0, 3, 0),  //6
-                        new THREE.Vector3(0, 0, 0),  //7
-
-
-
-                    ];
-
-                    //=======================SHAPE 3 VOLUME===========
-                    var bottom3 = [
-                        new THREE.Vector3(6, 0, 0),
-                        new THREE.Vector3(6, 3, 0)  //4
-                        //5 
-                    ];
-
-                    var head3 = [
-                        new THREE.Vector3(1, 0, -15), //1
-                    ]
-                    //===================Center Vertex============
-                    function vertexCenter(vertex1, vertex2) {
-
-                        var x = (vertex1.x + vertex2.x) / 2;
-                        var y = (vertex1.y + vertex2.y) / 2;
-                        var z = (vertex1.z + vertex2.z) / 2;
-
-                        return new THREE.Vector3(x, y, z);
-                    }
-
-                    //===================FUNCTION FOR CREATING NEW SHAPE=========
-                    function addShape(points, timeout, callback, mirrored, visible) {
-                        var pointsGeometry = new THREE.Geometry();
-
-                        if (mirrored) {
-                            var mirroredPoints = _.map(points, function (point) {
-                                return new THREE.Vector3(-point.x, point.y, point.z);
-                            });
-                            points = points.concat(mirroredPoints);
-                        }
-
-                        pointsGeometry.vertices = points;
-
-                        var pointsMaterial = new THREE.PointsMaterial({
-                            color: '#5DB03D',
-                            map: texture,
-                            size: 0,
-                            alphaTest: 0.6
-                        });
-                        var points = new THREE.Points(pointsGeometry, pointsMaterial);
-
-
-                        var meshGeometry = new THREE.ConvexGeometry(pointsGeometry.vertices);
-
-                        var meshMaterial = new THREE.MeshLambertMaterial({
-                            color: '#5DB03D',
-                            opacity: 0,
-                            transparent: visible ? false : true
-                        });
-                        // mesh = new THREE.Mesh(meshGeometry, meshMaterial);
-                        // mesh.material.side = THREE.BackSide; // back faces
-                        // mesh.renderOrder = 0;
-                        // group.add(mesh);
-                        if (timeout) {
-                            setTimeout(function () {
-                                group.add(points);
-                                mesh = new THREE.Mesh(meshGeometry, meshMaterial.clone());
-                                mesh.material.side = THREE.FrontSide; // front faces
-                                mesh.renderOrder = 1;
-                                group.add(mesh);
-                                // console.log('Shape added!');
-                                callback();
-                            }, timeout);
-                        } else {
-                            group.add(points);
-                            mesh = new THREE.Mesh(meshGeometry, meshMaterial.clone());
-                            mesh.material.side = THREE.FrontSide; // front faces
-                            mesh.renderOrder = 1;
-                            group.add(mesh);
-                            callback();
-                        }
-
-                    }
-                    function getProectionOnLine(point1, point2, point3) {
-
-                        return ((point3.y - point1.y) / (point2.y - point1.y)) * (point2.x - point1.x) + point1.x;
-                    }
-
-                    var initialTimeout = 10;
-                    var initialPlusX = 0.019;
-
-                    // Outer Voleme Intitalize
-                    var outerVolume = 0;
-                    var mirrored = true;
-                    //Initialize Global iterator 
-                    var asyncI = 0;
-                    simpleShpangs = _.map(simpleShpangs, function (spang) {
-                        var PlusShpangs = _.map(spang, function (point) {
-
-                            if (point.x !== 0) {
-
-                                var sum = Math.round((initialPlusX + point.x) * 1e12) / 1e12;
-
-                                point.x = sum;
-                            }
-
-                            return point;
-                        });
-
-                        // var midddleShpang = _.filter(PlusShpangs, function (point) {
-                        //     return point.y <= 5.465;
-                        // });
-
-                        // var proectionPoint = new THREE.Vector3();
-
-                        // if (spang[midddleShpang.length]) {
-                        //     proectionPoint.z = spang[midddleShpang.length].z;
-                        //     proectionPoint.y = 5.465;
-                        //     proectionPoint.x = getProectionOnLine(spang[midddleShpang.length], spang[midddleShpang.length - 1], proectionPoint);
-                        //     console.log('proectionPoint', proectionPoint);
-                        // }
-                        // midddleShpang.push(proectionPoint);
-                        return _.reverse(PlusShpangs);
+                            .then(function (res) {
+                                console.log('res!!!!!!!!1', res);
+                            })
                     });
 
-                    // async.eachSeries(simpleShpangs, function (thisShpang, eachCallback1) {
-                    //     //Initialize iterator for this iteration
-                    //     var asyncJ = 0;
-                    //     var middleVolume = 0;
-                    //     if (asyncI === 0) {
-                    //         asyncI++;
-                    //         return eachCallback1();
-                    //     }
-                    //     var beforeShapng = simpleShpangs[asyncI - 1];
-                    //     if (thisShpang.length > beforeShapng.length) {
-
-                    //         async.eachSeries(thisShpang, function (thisPoint, eachCallback2) {
-                    //             if (asyncJ === 0) {
-                    //                 asyncJ++;
-                    //                 return eachCallback2();
-                    //             }
-                    //             var beforePoint = thisShpang[asyncJ - 1];
-
-
-                    //             var beforeShapngIndex = asyncJ - 1;
-                    //             if (asyncJ >= beforeShapng.length) {
-                    //                 beforeShapngIndex = beforeShapng.length - 1;
-                    //             }
-
-                    //             var bottom = [beforePoint, thisPoint];
-
-                    //             var centerPoint = vertexCenter(proectionOnShapng(beforePoint, Ship.base[asyncI].ShpangX), proectionOnShapng(thisPoint, Ship.base[asyncI].ShpangX));
-
-                    //             var minDisArray = minDistanse(centerPoint, beforeShapng, Ship.base[asyncI - 1].ShpangX);
-
-                    //             var head = [minDisArray[0]];
-                    //             var shape = bottom.concat(head);
-                    //             // shape.push(proectionX(shape[0]));
-                    //             // shape.push(proectionX(shape[1]));
-                    //             // shape.push(proectionX(shape[2]));
-                    //             // console.log('asyncJ', asyncJ);
-                    //             // console.log('bottom', bottom);
-                    //             // console.log('head', head);
-
-                    //             var volume = getVolume(bottom, head);
-                    //             middleVolume += volume;
-                    //             var visible = true;
-                    //             if (volume === 0) {
-                    //                 visible = false;
-                    //                 //console.log('bottom', bottom);
-                    //                 // console.log('head', head);
-                    //             } else {
-                    //                 visible = true;
-                    //             }
-
-                    //             addShape(shape, initialTimeout, function () {
-                    //                 if (asyncJ >= beforeShapng.length) {
-
-                    //                     asyncJ++;
-                    //                     eachCallback2();
-                    //                 } else {
-                    //                     var bottom2 = [beforeShapng[asyncJ - 1], beforeShapng[asyncJ - 0]];
-
-                    //                     var centerPoint = vertexCenter(proectionOnShapng(beforeShapng[asyncJ - 1], Ship.base[asyncI - 1].ShpangX), proectionOnShapng(beforeShapng[asyncJ - 0], Ship.base[asyncI - 1].ShpangX));
-
-                    //                     var minDisArray2 = minDistanse(centerPoint, thisShpang, Ship.base[asyncI].ShpangX);
-                    //                     var head2 = [minDisArray2[0]];
-
-                    //                     if (minDisArray2[1]) {
-                    //                         if (minDisArray[0].y !== minDisArray2[1].y) {
-
-                    //                             head2 = [minDisArray2[1]];
-                    //                         }
-                    //                     }
-
-                    //                     var shape2 = bottom2.concat(head2);
-
-                    //                     // shape.push(proectionX(shape[0]));
-                    //                     // shape.push(proectionX(shape[1]));
-                    //                     // shape.push(proectionX(shape[2]));
-                    //                     var volume2 = getVolume(bottom2, head2);
-                    //                     middleVolume += volume2;
-                    //                     if (volume2 === 0) {
-                    //                         // console.log('bottom', bottom);
-                    //                         // console.log('head', head);
-                    //                         visible = false;
-                    //                     } else {
-                    //                         visible = true;
-                    //                     }
-                    //                     if (isNaN(middleVolume)) {
-                    //                         // console.log('NAN bottom', bottom2);
-                    //                         // console.log('NAN head', head2);
-                    //                     }
-                    //                     addShape(shape2, initialTimeout, function () {
-                    //                         asyncJ++;
-                    //                         eachCallback2();
-                    //                     }, mirrored, visible);
-                    //                 }
-
-
-                    //             }, mirrored, visible);
-
-
-                    //         }, function (err) {
-                    //             if (!err) {
-                    //                 outerVolume += middleVolume;
-                    //                 asyncI++;
-                    //                 eachCallback1();
-                    //             }
-                    //         });
-                    //     } else {
-                    //         async.eachSeries(beforeShapng, function (thisPoint, eachCallback2) {
-
-                    //             if (asyncJ === 0) {
-                    //                 asyncJ++;
-                    //                 return eachCallback2();
-                    //             }
-                    //             var beforePoint = beforeShapng[asyncJ - 1];
-
-                    //             var thisShpangIndex = asyncJ - 1;
-
-
-                    //             if (asyncJ >= thisShpang.length) {
-                    //                 thisShpangIndex = thisShpang.length - 1;
-                    //             }
-                    //             var bottom = [beforePoint, thisPoint];
-                    //             var centerPoint = vertexCenter(proectionOnShapng(beforePoint, Ship.base[asyncI - 1].ShpangX), proectionOnShapng(thisPoint, Ship.base[asyncI - 1].ShpangX));
-
-                    //             var minDisArray = minDistanse(centerPoint, thisShpang, Ship.base[asyncI - 1].ShpangX);
-                    //             //   console.log('centerPoint', centerPoint);
-                    //             //  console.log('minDisArray', minDisArray);
-                    //             var head = [minDisArray[0]];
-                    //             var shape = bottom.concat(head);
-                    //             // shape.push(proectionX(shape[0]));
-                    //             // shape.push(proectionX(shape[1]));
-                    //             // shape.push(proectionX(shape[2]));
-                    //             //  console.log('asyncJ', asyncJ);
-                    //             //  console.log('bottom', bottom);
-                    //             //  console.log('head', head);
-                    //             var volume = getVolume(bottom, head);
-                    //             middleVolume += volume;
-                    //             var visible = true;
-                    //             if (volume === 0) {
-                    //                 visible = false;
-                    //                 //  console.log('bottom', bottom);
-                    //                 //   console.log('head', head);
-                    //             } else {
-                    //                 visible = true;
-                    //             }
-
-                    //             addShape(shape, initialTimeout, function () {
-                    //                 if (asyncJ >= thisShpang.length) {
-                    //                     asyncJ++;
-                    //                     eachCallback2();
-                    //                 } else {
-                    //                     var bottom2 = [thisShpang[asyncJ - 1], thisShpang[asyncJ - 0]];
-
-                    //                     var centerPoint = vertexCenter(proectionOnShapng(thisShpang[asyncJ - 1], Ship.base[asyncI].ShpangX), proectionOnShapng(thisShpang[asyncJ - 0], Ship.base[asyncI].ShpangX));
-
-                    //                     var minDisArray2 = minDistanse(centerPoint, beforeShapng, Ship.base[asyncI - 1].ShpangX);
-                    //                     var head2 = [minDisArray2[0]];
-
-                    //                     if (minDisArray2[1]) {
-                    //                         if (minDisArray[0].y !== minDisArray2[1].y) {
-
-                    //                             head2 = [minDisArray2[1]];
-                    //                         }
-
-                    //                     }
-                    //                     var shape2 = bottom2.concat(head2);
-                    //                     // shape.push(proectionX(shape[0]));
-                    //                     // shape.push(proectionX(shape[1]));
-                    //                     // shape.push(proectionX(shape[2]));
-
-                    //                     var volume2 = getVolume(bottom2, head2);
-                    //                     middleVolume += volume2;
-                    //                     if (volume2 === 0) {
-                    //                         //  console.log('bottom2', bottom);
-                    //                         //  console.log('head2', head);
-                    //                         visible = false;
-                    //                     } else {
-                    //                         visible = true;
-                    //                     }
-
-                    //                     addShape(shape2, initialTimeout, function () {
-                    //                         asyncJ++;
-                    //                         eachCallback2();
-                    //                     }, mirrored, visible);
-                    //                 }
-
-                    //             }, mirrored, visible);
-
-
-                    //         }, function (err) {
-                    //             if (!err) {
-                    //                 outerVolume += middleVolume;
-                    //                 asyncI++;
-                    //                 eachCallback1();
-                    //             }
-                    //         });
-                    //     }
-
-
-                    // }, function (err) {
-                    //     if (!err) {
-                    //         console.log('GREAT!!!!!!!!!! VOLUEM=', outerVolume * 2);
-                    //         console.log('GREAT!!!!!!!!!!TONN VOLUEM=', outerVolume * 2 * 1.025);
-                    //         console.log('GROUP', group);
-                    //     }
-                    // });
-
-
-
-
-                    // for (var i = 1; i < simpleShpangsForVolume.length; i++) {
-                    //     var middleVolume = 0;
-                    //     var flag = true;
-                    //     if (simpleShpangsForVolume[i - 1].length > simpleShpangsForVolume[i].length) {
-                    //         for (var j = 1; j < simpleShpangsForVolume[i - 1].length; j = j + 2) {
-                    //             if (j < simpleShpangsForVolume[i].length && flag) {
-                    //                 var bottom = [simpleShpangsForVolume[i - 1][j - 1], simpleShpangsForVolume[i - 1][j]];
-                    //                 var head = [simpleShpangsForVolume[i][j]];
-                    //                 middleVolume += getVolume(bottom, head);
-
-                    //                 flag = false;
-
-                    //             } else {
-
-                    //             }
-
-                    //         }
-                    //     } else {
-
-                    //     }
-
-                    //     // var Volume3 = getVolume(bottom3, head3);
-                    //     // console.log('Volume3!!!!!!!', Volume3);
-                    // }
-
-
-
-                    // pointsGeometry3.vertices = Ship.Bow;
-                    // console.log('Ship.Bow', Ship.Bow);
-                    // var pointsMaterial3 = new THREE.PointsMaterial({
-                    //     color: '#CC181E',
-                    //     map: texture,
-                    //     size: 1,
-                    //     alphaTest: 0.6
-                    // });
-                    // var points3 = new THREE.Points(pointsGeometry3, pointsMaterial3);
-                    // // group.add(points3);
-
-                    // var meshGeometry3 = new THREE.ConvexGeometry(pointsGeometry3.vertices);
-
-                    // var meshMaterial3 = new THREE.MeshLambertMaterial({
-                    //     color: '#CC181E',
-                    //     opacity: 0.5,
-                    //     transparent: false
-                    // });
-                    // mesh3 = new THREE.Mesh(meshGeometry3, meshMaterial3);
-                    // mesh3.material.side = THREE.BackSide; // back faces
-                    // mesh3.renderOrder = 0;
-                    // //  group.add(mesh3);
-                    // mesh3 = new THREE.Mesh(meshGeometry3, meshMaterial3.clone());
-                    // mesh3.material.side = THREE.FrontSide; // front faces
-                    // mesh3.renderOrder = 1;
-                    // // group.add(mesh3);
-
-                    // console.log('meshGeometry3', meshGeometry3);
+                    stats = new Stats();
+                    // document.getElementById('model').appendChild(stats.dom);
+                    // document.addEventListener('mousemove', onDocumentMouseMove, false);
                     window.addEventListener('resize', onWindowResize, false);
                 }
                 function randomPoint() {
@@ -1107,16 +281,53 @@ angular.module('app')
                 function onWindowResize() {
                     camera.aspect = window.innerWidth / window.innerHeight;
                     camera.updateProjectionMatrix();
+                    renderer.setSize(window.innerWidth, window.innerHeight);
+
                     renderer.setSize($scope.modelSize.width, $scope.modelSize.height);
                 }
+
+
+
                 function animate() {
                     requestAnimationFrame(animate);
-                    //group.rotation.y += 0.005;
+                    // //group.rotation.y += 0.005;
                     render();
                 }
+
+                function onDocumentMouseMove(event) {
+                    event.preventDefault();
+                    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+                    mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
+                }
+                //
+
+
+
+
                 function render() {
+                    // // theta += 0.1;
+                    // // camera.position.x = radius * Math.sin(THREE.Math.degToRad(theta));
+                    // // camera.position.y = radius * Math.sin(THREE.Math.degToRad(theta));
+                    // // camera.position.z = radius * Math.cos(THREE.Math.degToRad(theta));
+                    // camera.lookAt(scene.position);
+                    // camera.updateMatrixWorld();
+                    // // find intersections
+                    // raycaster.setFromCamera(mouse, camera);
+                    // var intersects = raycaster.intersectObjects(scene.children);
+                    // if (intersects.length > 0) {
+                    //     if (INTERSECTED != intersects[0].object) {
+                    //         if (INTERSECTED) INTERSECTED.material.emissive.setHex(INTERSECTED.currentHex);
+                    //         INTERSECTED = intersects[0].object;
+                    //         INTERSECTED.currentHex = INTERSECTED.material.emissive.getHex();
+                    //         INTERSECTED.material.emissive.setHex(0xff0000);
+                    //     }
+                    // } else {
+                    //     if (INTERSECTED) INTERSECTED.material.emissive.setHex(INTERSECTED.currentHex);
+                    //     INTERSECTED = null;
+                    // }
                     renderer.render(scene, camera);
                 }
+
 
 
             }
@@ -1135,137 +346,89 @@ angular.module('app')
 
 
             $scope.show2d = function () {
-                if ($scope.model2d)
-                    return;
-                $scope.model2d = true;
-                // Global scene object 
-                var scene1;
+                var container, stats;
+                var camera, scene, raycaster, renderer;
+                var mouse = new THREE.Vector2(), INTERSECTED;
+                var radius = 100, theta = 0;
+                container = document.getElementById('model2d');
 
-                // Global camera object 
-                var camera1;
-                var renderer1;
-                // Initialize the scene 
-                initializeScene();
+                init();
+                animate();
+                function init() {
 
-                // Render the scene (map the 3D world to the 2D scene) 
-                renderScene();
+                    //document.body.appendChild(container);
+                    var info = document.createElement('div');
 
-                /** 
-                 * Initialze the scene. 
-                */
-                function initializeScene() {
-                    // Check whether the browser supports WebGL. If so, instantiate the hardware accelerated 
-                    // WebGL renderer. For antialiasing, we have to enable it. The canvas renderer uses 
-                    // antialiasing by default. 
-                    // The approach of multiple renderers is quite nice, because your scene can also be 
-                    // viewed in browsers, which don't support WebGL. The limitations of the canvas renderer 
-                    // in contrast to the WebGL renderer will be explained in the tutorials, when there is a 
-                    // difference. 
-                    if (Detector.webgl) {
-                        renderer1 = new THREE.WebGLRenderer({ antialias: true });
-
-                        // If its not supported, instantiate the canvas renderer to support all non WebGL 
-                        // browsers 
-
-                    } else {
-                        renderer1 = new THREE.CanvasRenderer();
-
+                    camera = new THREE.PerspectiveCamera(70, container.clientWidth / container.clientHeight, 1, 10000);
+                    scene = new THREE.Scene();
+                    var light = new THREE.DirectionalLight(0xffffff, 1);
+                    light.position.set(1, 1, 1).normalize();
+                    scene.add(light);
+                    var geometry = new THREE.BoxBufferGeometry(20, 20, 20);
+                    for (var i = 0; i < 2000; i++) {
+                        var object = new THREE.Mesh(geometry, new THREE.MeshLambertMaterial({ color: Math.random() * 0xffffff }));
+                        object.position.x = Math.random() * 800 - 400;
+                        object.position.y = Math.random() * 800 - 400;
+                        object.position.z = Math.random() * 800 - 400;
+                        object.rotation.x = Math.random() * 2 * Math.PI;
+                        object.rotation.y = Math.random() * 2 * Math.PI;
+                        object.rotation.z = Math.random() * 2 * Math.PI;
+                        object.scale.x = Math.random() + 0.5;
+                        object.scale.y = Math.random() + 0.5;
+                        object.scale.z = Math.random() + 0.5;
+                        scene.add(object);
                     }
-
-                    // Set the background color of the renderer to black, with full opacity 
-                    renderer1.setClearColor(0x000000, 1);
-
-                    // Get the size of the inner window (content area) to create a full size renderer 
-                    var canvasWidth1 = window.innerWidth;
-                    var canvasHeight1 = window.innerHeight;
-
-                    // Set the renderers size to the content areas size 
-                    renderer1.setSize(1280, 1024);
-
-                    // Get the DIV element from the HTML document by its ID and append the renderers DOM 
-                    // object to it 
-                    document.getElementById("model2d").appendChild(renderer1.domElement);
-
-                    // Create the scene, in which all objects are stored (e. g. camera, lights, 
-                    // geometries, ...) 
-                    scene1 = new THREE.Scene();
-
-                    // Now that we have a scene, we want to look into it. Therefore we need a camera. 
-                    // Three.js offers three camera types: 
-                    //  - PerspectiveCamera (perspective projection) 
-                    //  - OrthographicCamera (parallel projection) 
-                    //  - CombinedCamera (allows to switch between perspective / parallel projection 
-                    //    during runtime) 
-                    // In this example we create a perspective camera. Parameters for the perspective 
-                    // camera are ... 
-                    // ... field of view (FOV), 
-                    // ... aspect ratio (usually set to the quotient of canvas width to canvas height) 
-                    // ... near and 
-                    // ... far. 
-                    // Near and far define the cliping planes of the view frustum. Three.js provides an 
-                    // example (http://mrdoob.github.com/three.js/examples/ 
-                    // -> canvas_camera_orthographic2.html), which allows to play around with these 
-                    // parameters. 
-                    // The camera is moved 10 units towards the z axis to allow looking to the center of 
-                    // the scene. 
-                    // After definition, the camera has to be added to the scene. 
-                    camera1 = new THREE.PerspectiveCamera(45, canvasWidth1 / canvasHeight1, 1, 100);
-                    camera1.position.set(0, 0, 10);
-                    camera1.lookAt(scene1.position);
-                    scene1.add(camera1);
-
-                    // Create the triangle (or any arbitrary geometry). 
-                    // 1. Instantiate the geometry object 
-                    // 2. Add the vertices 
-                    // 3. Define the faces by setting the vertices indices 
-                    var triangleGeometry = new THREE.Geometry();
-                    triangleGeometry.vertices = [];
-                    var simpleShpangs = [];
-                    for (var i = 0; i < shpangs.shpangs.length; i++) {
-                        var middleArray = [];
-                        for (var j = 0; j < shpangs.shpangs[i].length; j++) {
-                            if ((shpangs.shpangs[i][j].x / 100) > 0) {
-                                middleArray.push(new THREE.Vector3((shpangs.shpangs[i][j].x / 100), -(shpangs.shpangs[i][j].y / 100), -(shpangs.shpangs[i][j].z / 1.3)));
-                            } else {
-                                middleArray.push(new THREE.Vector3(-(shpangs.shpangs[i][j].x / 100), -(shpangs.shpangs[i][j].y / 100), -(shpangs.shpangs[i][j].z / 1.3)));
-                            }
-
-
-                        }
-                        simpleShpangs.push(middleArray);
-                    }
-                    triangleGeometry.vertices = simpleShpangs;
-
-                    // To color the surface, a material has to be created. If all faces have the same color, 
-                    // the THREE.MeshBasicMaterial fits our needs. It offers a lot of attributes (see 
-                    // https://github.com/mrdoob/three.js/blob/master/src/materials/MeshBasicMaterial.js) 
-                    // from which we need in this lesson only 'color'. 
-
-                    // Create a white basic material and activate the 'doubleSided' attribute to force the 
-                    // rendering of both sides of each face (front and back). This prevents the so called 
-                    // 'backface culling'. Usually, only the side is rendered, whose normal vector points 
-                    // towards the camera. The other side is not rendered (backface culling). But this 
-                    // performance optimization sometimes leads to wholes in the surface. When this happens 
-                    // in your surface, simply set 'doubleSided' to 'true'. 
-                    var triangleMaterial = new THREE.MeshBasicMaterial({
-                        color: 0xFFFFFF,
-                        side: THREE.DoubleSide
-                    });
-
-                    // Create a mesh and insert the geometry and the material. Translate the whole mesh 
-                    // by -1.5 on the x axis and by 4 on the z axis. Finally add the mesh to the scene. 
-                    var triangleMesh = new THREE.Mesh(triangleGeometry, triangleMaterial);
-                    triangleMesh.position.set(-1.5, 0.0, 4.0);
-                    scene1.add(triangleMesh);
-
-
-
+                    raycaster = new THREE.Raycaster();
+                    renderer = new THREE.WebGLRenderer();
+                    renderer.setClearColor(0xf0f0f0);
+                    renderer.setPixelRatio(window.devicePixelRatio);
+                    renderer.setSize(container.clientWidth, container.clientHeight);
+                    renderer.sortObjects = false;
+                    container.appendChild(renderer.domElement);
+                    stats = new Stats();
+                    container.appendChild(stats.dom);
+                    document.addEventListener('mousemove', onDocumentMouseMove, false);
+                    //
+                    window.addEventListener('resize', onWindowResize, false);
                 }
-                /** 
-            * Render the scene. Map the 3D world to the 2D screen.             */
-                function renderScene() {
-                    renderer1.render(scene1, camera1);
-
+                function onWindowResize() {
+                    camera.aspect = container.clientWidth / container.clientHeight;
+                    camera.updateProjectionMatrix();
+                    renderer.setSize(container.clientWidth, container.clientHeight);
+                }
+                function onDocumentMouseMove(event) {
+                    event.preventDefault();
+                    mouse.x = (event.clientX / container.clientWidth) * 2 - 1;
+                    mouse.y = - (event.clientY / container.clientHeight) * 2 + 1;
+                }
+                //
+                function animate() {
+                    requestAnimationFrame(animate);
+                    render();
+                    stats.update();
+                }
+                function render() {
+                    theta += 0.1;
+                    camera.position.x = radius * Math.sin(THREE.Math.degToRad(theta));
+                    camera.position.y = radius * Math.sin(THREE.Math.degToRad(theta));
+                    camera.position.z = radius * Math.cos(THREE.Math.degToRad(theta));
+                    camera.lookAt(scene.position);
+                    camera.updateMatrixWorld();
+                    // find intersections
+                    raycaster.setFromCamera(mouse, camera);
+                    var intersects = raycaster.intersectObjects(scene.children);
+                    if (intersects.length > 0) {
+                        if (INTERSECTED != intersects[0].object) {
+                            if (INTERSECTED) INTERSECTED.material.emissive.setHex(INTERSECTED.currentHex);
+                            INTERSECTED = intersects[0].object;
+                            INTERSECTED.currentHex = INTERSECTED.material.emissive.getHex();
+                            INTERSECTED.material.emissive.setHex(0xff0000);
+                        }
+                    } else {
+                        if (INTERSECTED) INTERSECTED.material.emissive.setHex(INTERSECTED.currentHex);
+                        INTERSECTED = null;
+                    }
+                    renderer.render(scene, camera);
                 }
             }
         }]);

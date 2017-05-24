@@ -105,10 +105,53 @@ function TktLoader(ship) {
     }
     console.log('OuterObject', OuterObject);
     OuterObject.shpangs = _.sortBy(OuterObject.shpangs, function (shpang) {
-
         return shpang[0].z;
     });
 
+
+
+
+    //--------------------------LOAD COMPARTMENTS-------------------------
+
+    var compartments = _.map(ship.Compartments, function (compartment) {
+        console.log('compartment', compartment);
+        return {
+
+            Name: compartment.Name,
+            bow: {
+                Z: compartment.Bow.X,
+                points: _.reverse(
+                    _.uniqBy(
+                        _.sortBy(
+                            _.map(compartment.Bow.points, function (point) {
+                                return new THREE.Vector3(point.y, point.z, compartment.Bow.X);
+                            }),
+                            ['x', 'y']),
+                        function (point) {
+                            return JSON.stringify(_.pick(point, ['x', 'y']));
+                        })
+                ),
+
+            },
+            stern: {
+                Z: compartment.Stern.X,
+                points: _.reverse(
+                    _.uniqBy(
+                        _.sortBy(
+                            _.map(compartment.Stern.points, function (point) {
+                                return new THREE.Vector3(point.y, point.z, compartment.Stern.X);
+                            }),
+                            ['x', 'y']),
+                        function (point) {
+                            return JSON.stringify(_.pick(point, ['x', 'y']));
+                        })
+                ),
+            },
+
+        }
+    });
+
+    OuterObject.compartments = compartments;
 
 
     return OuterObject;
