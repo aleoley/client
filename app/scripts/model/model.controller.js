@@ -8,15 +8,17 @@ var natali = require('./natali.js').natali;
 var _ = require('lodash');
 var ModelBuilder = require('./helpers/modelBuilder');
 var async = require('async');
+const MathJS = require('mathjs');
 
 'use strict';
 
 angular.module('app')
-    .controller('modelController', ['$scope', 'ModelService', '$q', '$mdDialog', '$mdToast', '$mdSidenav',
-        function modelController($scope, ModelService, $q, $mdDialog, $mdToast, $mdSidenav) {
+    .controller('modelController', ['$scope', 'ModelService', '$q', '$mdDialog', '$mdToast', '$mdSidenav', 'NgTableParams', 'usSpinnerService',
+        function modelController($scope, ModelService, $q, $mdDialog, $mdToast, $mdSidenav, NgTableParams, usSpinnerService) {
+
+            //-----------------------------INITIAL DEFAAULT PARAMS------------------
             var group, camera, scene, renderer;
-
-
+            $scope.tableParams = new NgTableParams({}, { dataset: [] });
             $scope.toggleLeft = buildToggler('left');
             $scope.toggleRight = buildToggler('right');
             function buildToggler(componentId) {
@@ -31,13 +33,19 @@ angular.module('app')
             }
             $scope.model3d = false;
             $scope.model2d = false;
-
+            $scope.finded_different = {
+                different: 0.0023
+            }
+            $scope.finded_filter = {
+                h: 3.3
+            }
+            $scope.ResultShipData = {};
 
             $scope.setWidth = function () {
                 renderer.setSize($scope.modelSize.width, $scope.modelSize.height);
             }
             var loader = new THREE.TextureLoader();
-            var texture = loader.load('./node_modules/three.js/examples/textures/sprites/disc.png');
+            var texture = loader.load('./assets/materials/monkey.png');
 
 
             if (!Detector.webgl) Detector.addGetWebGLMessage();
@@ -46,6 +54,10 @@ angular.module('app')
             var raycaster = new THREE.Raycaster();
             init();
             animate();
+
+
+
+
 
 
 
@@ -85,8 +97,6 @@ angular.module('app')
                 scene.add(group);
 
 
-
-
                 window.addEventListener('resize', onWindowResize, false);
             }
 
@@ -122,45 +132,71 @@ angular.module('app')
             }
 
 
-
-
-
-
-
+            $scope.Ship = {
+                name: 'TEST'
+            }
 
             $scope.load = () => {
+                $scope.startSpin();
                 ModelService
                     .Ship
                     .Load(natali)
                     .then((res) => {
+                        $scope.stopSpin();
                         console.log('RES!!!!!!', res);
                         $scope.Ship = res;
-                    })
+                        console.log('$scope.Ship!!!!!!', $scope.Ship);
+                        return res;
+                    });
             };
 
             $scope.stabilazed = () => {
+                $scope.startSpin();
                 ModelService
                     .Ship
                     .Stabilazed({
+                        // initialPlusX: 0.004,
                         Ship: $scope.Ship,
                         searchVolume: $scope.Ship.Weight / 1.025,
                         step: 0.1,
                         water: 1.025,
                     })
                     .then((res) => {
+
+                        $scope.stopSpin();
                         console.log('STABILAZED', res);
                         $scope.finded_filter = res;
                     })
             };
+
+            $scope.stabilazedDifferent = () => {
+                $scope.startSpin();
+                ModelService
+                    .Ship
+                    .StabilazedDifferent({
+                        //initialPlusX: 0.004,
+                        Ship: $scope.Ship,
+                        searchMassCenter: new THREE.Vector3(0, 4.81, -2.33),
+                        etta: 0.1,
+                        filter: $scope.finded_filter.h,
+                        water: 1.025,
+                    })
+                    .then((res) => {
+                        $scope.stopSpin();
+                        console.log('STABILAZED', res);
+                        $scope.finded_different = res;
+                    });
+            };
+
             $scope.build = () => {
-
+                $scope.startSpin();
                 ModelBuilder
-
                     .build({
+                        //initialPlusX: 0.004,
                         Ship: $scope.Ship,
                         initialTimeout: 0,
                         filter: $scope.finded_filter.h,
-                        different: 0.0323,
+                        different: $scope.finded_different.different,
                         createShape: true,
                         mirrored: true,
                         // half: true,
@@ -170,7 +206,18 @@ angular.module('app')
                         group: group
                     })
                     .then((res) => {
-                        console.log('res[0].group', res[1].group);
+                        $scope.stopSpin();
+                        $scope.ResultShipData = res[0];
+                        $scope.ResultShipData.Tm = res[0].filter;
+                        $scope.ResultShipData.ShipTonnVolume = $scope.Ship.Weight;
+                        $scope.ResultShipData.ShipVolume = $scope.Ship.Weight / 1.025;
+                        $scope.ResultShipData.ShipMassCenter = new THREE.Vector3(0, 4.81, -2.33);
+                        var dataSet = ModelService.DataSet.Build($scope.ResultShipData);
+                        console.log('dataSet', dataSet);
+                        $scope.tableParams = new NgTableParams({}, { dataset: dataSet });
+                        //xc=xg-(zc-zg)*tg 
+                        //zc=zg-(yc-yg)*tg
+                        console.log('etta', MathJS.abs((MathJS.tan(res[0].different) * (4.81 - res[0].MassCenter.y)) + (-2.33) - res[0].MassCenter.z));
                         var shipGroup = new THREE.Group(res[1].group);
                         console.log('shipGroup', shipGroup);
                         scene.add(shipGroup);
@@ -178,6 +225,15 @@ angular.module('app')
                         console.log('Build', res);
                     })
             };
+
+            $scope.startSpin = function () {
+                usSpinnerService.spin('spinner-1');
+            }
+            $scope.stopSpin = function () {
+                usSpinnerService.stop('spinner-1');
+            }
+
+
 
 
 

@@ -398,7 +398,7 @@ function build(paramsObject) {
                     //paramsObject.filter = paramsObject.compartment.bow.points[0].y;
                     paramsObject.Ship.shpangs = volumeShpangs;
                     paramsObject.color = RandomColors();
-                    paramsObject.initialPlusX = false;
+                    paramsObject.initialPlusX = 0;
                     paramsObject.mirrored = false;
                     paramsObject.filter = false;
                     //  paramsObject.transparent = true;

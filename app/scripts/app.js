@@ -15,7 +15,8 @@ angular.module('app', [
     'ui.router',
     'mdPickers',
     'angularFileUpload',
-    'ngTable'
+    'ngTable',
+    'angularSpinner'
 
 ])
     .run(function ($rootScope) {
@@ -71,4 +72,7 @@ angular.module('app', [
 
 
 
-    });
+    }).config(['usSpinnerConfigProvider', function (usSpinnerConfigProvider) {
+        usSpinnerConfigProvider.setTheme('bigBlue', { color: 'blue', radius: 20 });
+        usSpinnerConfigProvider.setTheme('smallRed', { color: 'red', radius: 6 });
+    }]);

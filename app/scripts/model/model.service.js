@@ -1,5 +1,7 @@
 const { ipcRenderer } = require('electron');
 
+const stabilityList = require('./assets/baseStructures/stabilityList').StabilitiList;
+
 (function () {
     'use strict';
 
@@ -10,10 +12,11 @@ const { ipcRenderer } = require('electron');
 
         const Ship = {
             Load: (ship) => {
-                return new Promise((resolve, reject) => {
+                return $q((resolve, reject) => {
 
                     ipcRenderer.on('error-reply', (event, err) => {
                         showAlert(err);
+                        reject(err);
                     });
 
                     ipcRenderer.on('load_ship-reply', (event, responce) => {
@@ -24,10 +27,11 @@ const { ipcRenderer } = require('electron');
                 });
             },
             Stabilazed: (params) => {
-                return new Promise((resolve, reject) => {
+                return $q((resolve, reject) => {
 
                     ipcRenderer.on('error-reply', (event, err) => {
                         showAlert(err);
+                        reject(err);
                     });
 
                     ipcRenderer.on('stabilazed_volume-reply', (event, responce) => {
@@ -37,15 +41,31 @@ const { ipcRenderer } = require('electron');
                     ipcRenderer.send('stabilazed_volume', params);
                 });
             },
+            StabilazedDifferent: (params) => {
+                return $q((resolve, reject) => {
+
+                    ipcRenderer.on('error-reply', (event, err) => {
+                        showAlert(err);
+                        reject(err);
+                    });
+
+                    ipcRenderer.on('stabilazed_different-reply', (event, responce) => {
+                        resolve(responce);
+                    });
+
+                    ipcRenderer.send('stabilazed_different', params);
+                });
+            },
 
         };
         const Model = {
             Build: (params) => {
-                return new Promise((resolve, reject) => {
+                return $q((resolve, reject) => {
 
                     ipcRenderer.on('error-reply', (event, err) => {
-                        console.log('err!!!!11',err);
+                        console.log('err!!!!11', err);
                         showAlert(err);
+                        reject(err);
                     });
 
                     ipcRenderer.on('build_model-reply', (event, responce) => {
@@ -54,6 +74,22 @@ const { ipcRenderer } = require('electron');
 
                     ipcRenderer.send('build_model', params);
                 });
+            },
+        }
+
+        const DataSet = {
+            Build: (inputObject) => {
+
+                var outArray = _.compact(_.map(stabilityList, (item) => {
+                    var getter = _.get(inputObject, item.systemName);
+                    if (getter || getter === 0) {
+                        item.value = _.get(inputObject, item.systemName);
+                        return item;
+                    } else {
+                        return false;
+                    }
+                }));
+                return outArray;
             },
         }
 
@@ -84,7 +120,8 @@ const { ipcRenderer } = require('electron');
 
         return {
             Ship: Ship,
-            Model: Model
+            Model: Model,
+            DataSet: DataSet
 
         };
     }

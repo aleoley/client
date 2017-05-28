@@ -11,13 +11,36 @@ const ModelBuilder = require('../helpers/modelBuilder');
  */
 function stabilazed_volume(event, arg) {
     const cp = require('child_process');
-    const n = cp.fork(`${__dirname}/controllers/model.js`);
+    const n = cp.fork(`${__dirname}/process/volume.js`);
     n.on('message', (responce) => {
         console.log('PARENT got message:', responce);
         if (responce.error) {
             event.sender.send('error-reply', responce.error);
         } else {
             event.sender.send('stabilazed_volume-reply', responce.result);
+        }
+        n.kill('SIGKILL');
+    });
+     //event.sender.send('stabilazed_volume-reply', `${__dirname}/process/volume.js`);
+    n.send({ arg: arg });
+
+}
+
+
+/**
+ * Function For stabilazed Ship by ParamsObject and return current different
+ * @param {*} event 
+ * @param {*} arg 
+ */
+function stabilazed_different(event, arg) {
+    const cp = require('child_process');
+    const n = cp.fork(`${__dirname}/process/different.js`);
+    n.on('message', (responce) => {
+        console.log('PARENT got message:', responce);
+        if (responce.error) {
+            event.sender.send('error-reply', responce.error);
+        } else {
+            event.sender.send('stabilazed_different-reply', responce.result);
         }
         n.kill('SIGKILL');
     });
@@ -32,8 +55,6 @@ function stabilazed_volume(event, arg) {
  * @param {*} arg 
  */
 function load_ship(event, arg) {
-
-
 
     Loaders.TktLoader(arg)
         .then((res) => {
@@ -71,6 +92,7 @@ function build_model(event, arg) {
  */
 module.exports = {
     stabilazed_volume: stabilazed_volume,
+    stabilazed_different: stabilazed_different,
     load_ship: load_ship,
     build_model: build_model
 }

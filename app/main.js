@@ -38,13 +38,13 @@ app.on('ready', function () {
     mainWindow = null;
   });
 
-  //============================= MAIN ROUTER=========================
-
-
-
-  //ipcMain.addListener
+  //=============================START MAIN ROUTER=========================
 
   ipcMain.on('stabilazed_volume', Router.stabilazed_volume);
+  ipcMain.on('stabilazed_different', Router.stabilazed_different);
   ipcMain.on('load_ship', Router.load_ship);
   ipcMain.on('build_model', Router.build_model);
+
+  //===============================END MAIN ROUTER=========================
+  
 });

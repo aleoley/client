@@ -63,7 +63,6 @@ function getVolume(bottom, head, paramsObject) {
 function BuildVolume(paramsObject) {
     return new Promise(function (resolve, reject) {
         var initialTimeout = paramsObject.initialTimeout;
-        var initialPlusX = paramsObject.initialPlusX;
         var mirrored = paramsObject.mirrored;
         // Outer Volume Intitalize
         var outerVolume = 0;
@@ -378,9 +377,9 @@ function build(paramsObject) {
             var PlusShpangs = spang;
             // add initialPlusX if exists
             if (paramsObject.initialPlusX) {
-                PlusShpangs = _.map(spang, function (point) {
+                PlusShpangs = _.map(spang, (point) => {
                     if (point.x !== 0) {
-                        var sum = Math.round((initialPlusX + point.x) * 1e12) / 1e12;
+                        var sum = Math.round((paramsObject.initialPlusX + point.x) * 1e12) / 1e12;
                         point.x = sum;
                     }
 
@@ -435,7 +434,7 @@ function build(paramsObject) {
                 if (paramsObject.initialPlusX) {
                     PlusShpangs = _.map(spang, function (point) {
                         if (point.x !== 0) {
-                            var sum = Math.round((initialPlusX + point.x) * 1e12) / 1e12;
+                            var sum = Math.round((paramsObject.initialPlusX + point.x) * 1e12) / 1e12;
                             point.x = sum;
                         }
 
@@ -501,7 +500,7 @@ function build(paramsObject) {
             ]).then(function (result) {
                 //result.resultShpangs = paramsObject.simpleShpangs;
 
-                resolve(result);
+                resolve(paramsObject);
             })
         } else {
             paramsObject.simpleShpangs = simpleShpangs1;
@@ -514,7 +513,7 @@ function build(paramsObject) {
                     resolve(result);
                 })
                 .catch((err) => {
-                    reject(err);
+                    reject(paramsObject);
                 });
         }
 

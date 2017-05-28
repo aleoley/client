@@ -15,12 +15,14 @@
   },
   "dependencies": {
     "angular-material": "^1.1.1",
+    "angular-spinner": "^1.0.1",
     "async": "^2.1.5",
     "lodash": "^4.17.4",
     "mathjs": "^3.13.1",
     "moment": "^2.17.1",
     "ng-table": "^3.0.1",
     "randomcolor": "^0.5.2",
-    "ray-3d": "^1.1.1"
+    "ray-3d": "^1.1.1",
+    "spin": "0.0.1"
   }
 }

@@ -171,8 +171,6 @@ function trapezeSqueare(a, b, c, d) {
     }
     var ab22 = (in1 / ab2) * (in1 / ab2);
 
-
-
     var h = Math.sqrt(c * c - ab22);
     var squeare = (h * (a + b)) / 2;
 
@@ -274,8 +272,8 @@ function vertexCenter(vertex1, vertex2) {
 
 //===================FUNCTION FOR CREATING NEW SHAPE=========
 function addShape(points, paramsObject, callback) {
-    if (!points) {
-        return callback();
+    if (!points || !paramsObject.createShape) {
+        return callback({});
     }
 
     var pointsGeometry = new THREE.Geometry();
@@ -311,6 +309,7 @@ function addShape(points, paramsObject, callback) {
     var meshGeometry = new THREE.ConvexGeometry(pointsGeometry.vertices);
 
     var meshMaterial = new THREE.MeshLambertMaterial({
+
         color: paramsObject.color ? paramsObject.color : '#5DB03D',
         opacity: paramsObject.transparent ? 0.5 : 0,
         transparent: paramsObject.transparent ? true : paramsObject.visible ? false : true,
@@ -331,7 +330,7 @@ function addShape(points, paramsObject, callback) {
                 mesh.material.side = THREE.FrontSide; // front faces
                 mesh.renderOrder = 1;
                 paramsObject.group.add(mesh);
-                callback(massCenterPoint);
+                return callback(massCenterPoint);
             }
 
         }, paramsObject.initialTimeout);
@@ -345,7 +344,7 @@ function addShape(points, paramsObject, callback) {
             mesh.material.side = THREE.FrontSide; // front faces
             mesh.renderOrder = 1;
             paramsObject.group.add(mesh);
-            callback(massCenterPoint);
+            return callback(massCenterPoint);
         }
     }
 
@@ -356,7 +355,7 @@ function addShape(points, paramsObject, callback) {
 
 
 function addPoint(point, paramsObject) {
-    if (!point) {
+    if (!point || !paramsObject.createShape) {
         return;
     }
     var pointsGeometry = new THREE.Geometry();
@@ -387,7 +386,6 @@ function getProectionOnLine(point1, point2, point3) {
 function BuildVolume(paramsObject) {
     return new Promise(function (resolve, reject) {
         var initialTimeout = paramsObject.initialTimeout;
-        var initialPlusX = paramsObject.initialPlusX;
         var mirrored = paramsObject.mirrored;
         var firstPartMassCenter_X = 0;
         var firstPartMassCenter_Y = 0;
@@ -432,9 +430,9 @@ function BuildVolume(paramsObject) {
                     var head = [minDisArray[0]];
 
                     var shape;
-                    //if (paramsObject.createShape) {
-                    shape = bottom.concat(head);
-                    // }
+                    if (paramsObject.createShape) {
+                        shape = bottom.concat(head);
+                    }
 
 
                     var volume = getVolume(bottom, head, paramsObject);
@@ -475,9 +473,9 @@ function BuildVolume(paramsObject) {
                                 }
                             }
                             var shape2;
-                            // if (paramsObject.createShape) {
-                            shape2 = bottom2.concat(head2);
-                            // }
+                            if (paramsObject.createShape) {
+                                shape2 = bottom2.concat(head2);
+                            }
 
                             var volume2 = getVolume(bottom2, head2, paramsObject);
                             middleVolume += volume2.TrapezePyramidVolume + volume2.TrianglePyramidVolume;;
@@ -530,9 +528,9 @@ function BuildVolume(paramsObject) {
                     var head = [minDisArray[0]];
 
                     var shape;
-                    // if (paramsObject.createShape) {
-                    var shape = bottom.concat(head);
-                    //}
+                    if (paramsObject.createShape) {
+                        var shape = bottom.concat(head);
+                    }
 
                     var volume = getVolume(bottom, head, paramsObject);
                     middleVolume += volume.TrapezePyramidVolume + volume.TrianglePyramidVolume;;
@@ -572,9 +570,9 @@ function BuildVolume(paramsObject) {
 
                             }
                             var shape2;
-                            // if (paramsObject.createShape) {
-                            var shape2 = bottom2.concat(head2);
-                            // }
+                            if (paramsObject.createShape) {
+                                var shape2 = bottom2.concat(head2);
+                            }
 
                             var volume2 = getVolume(bottom2, head2, paramsObject);
                             middleVolume += volume2.TrapezePyramidVolume + volume2.TrianglePyramidVolume;
@@ -647,6 +645,8 @@ function BuildVolume(paramsObject) {
                     FilteredPlaneSquere: paramsObject.FilteredPlaneSquere,
                     group: paramsObject.group
                 });
+            } else {
+                reject(err);
             }
         });
     });
@@ -655,7 +655,7 @@ function BuildVolume(paramsObject) {
 function build(paramsObject) {
 
     return new Promise(function (resolve, reject) {
-      //  paramsObject.group = new THREE.Group(paramsObject.group);
+        //  paramsObject.group = new THREE.Group(paramsObject.group);
         paramsObject.Ship.shpangs = _.map(paramsObject.Ship.shpangs, function (shpang) {
             return _.sortBy(shpang, 'y');
         });
@@ -692,10 +692,23 @@ function build(paramsObject) {
 
             for (var i = 1; i < FilteredPlane.length; i++) {
 
-                var midddleSqquere = trapezeSqueare(distanceVector(FilteredPlane[i - 1], proectionX(FilteredPlane[i - 1])),
-                    distanceVector(FilteredPlane[i], proectionX(FilteredPlane[i])),
-                    distanceVector(FilteredPlane[i], proectionX(FilteredPlane[i - 1])),
-                    distanceVector(FilteredPlane[i - 1], proectionX(FilteredPlane[i]))
+                var midddleSqquere = trapezeSqueare(
+                    distanceVector(
+                        FilteredPlane[i - 1],
+                        proectionX(FilteredPlane[i - 1])
+                    ),
+                    distanceVector(
+                        FilteredPlane[i],
+                        proectionX(FilteredPlane[i])
+                    ),
+                    distanceVector(
+                        FilteredPlane[i],
+                        FilteredPlane[i - 1]
+                    ),
+                    distanceVector(
+                        proectionX(FilteredPlane[i - 1]),
+                        proectionX(FilteredPlane[i])
+                    )
                 );
 
 
@@ -733,7 +746,7 @@ function build(paramsObject) {
             // RESULT!!!!!!!!!!!!!!!!!!!!!!
             defaultPoint = massCenter
             paramsObject.filteredMassCenter = massCenter;
-            paramsObject.FilteredPlaneSquere = FilteredPlaneSquere;
+            paramsObject.FilteredPlaneSquere = FilteredPlaneSquere * 2;
             // console.log('RealFilteredPlaneMassCenter', massCenter);
         }
         ////trapezeMassCenter
@@ -745,7 +758,7 @@ function build(paramsObject) {
             if (paramsObject.initialPlusX) {
                 PlusShpangs = _.map(spang, function (point) {
                     if (point.x !== 0) {
-                        var sum = Math.round((initialPlusX + point.x) * 1e12) / 1e12;
+                        var sum = Math.round((paramsObject.initialPlusX + point.x) * 1e12) / 1e12;
                         point.x = sum;
                     }
 
@@ -800,7 +813,7 @@ function build(paramsObject) {
                 if (paramsObject.initialPlusX) {
                     PlusShpangs = _.map(spang, function (point) {
                         if (point.x !== 0) {
-                            var sum = Math.round((initialPlusX + point.x) * 1e12) / 1e12;
+                            var sum = Math.round((paramsObject.initialPlusX + point.x) * 1e12) / 1e12;
                             point.x = sum;
                         }
 
@@ -855,12 +868,12 @@ function build(paramsObject) {
             // console.log('simpleShpangs2', simpleShpangs2);
             Promise.all([
                 BuildVolume(Object.assign({}, {
-                    initialTimeout: 10,
+                    
                     simpleShpangs: simpleShpangs1,
                     color: '#770406'
                 }, paramsObject)),
                 BuildVolume(Object.assign({}, {
-                    initialTimeout: 100,
+                
                     color: '#51565e',
                     simpleShpangs: simpleShpangs2
                 }, paramsObject)),
