@@ -285,11 +285,13 @@ function build(paramsObject) {
         paramsObject.Ship.shpangs = _.map(paramsObject.Ship.shpangs, function (shpang) {
             return _.sortBy(shpang, 'y');
         });
+
+         var shpangsForWork = JSON.parse(JSON.stringify(paramsObject.Ship.shpangs));
         console.log('Volume', paramsObject);
         //if different we must find mass center of all squeare by filter
         var defaultPoint = new THREE.Vector3(0, 0, 0);
         if (paramsObject.different && paramsObject.filter) {
-            var FilteredPlane = _.compact(_.map(paramsObject.Ship.shpangs, function (spang) {
+            var FilteredPlane = _.compact(_.map(shpangsForWork, function (spang) {
 
                 var midddleShpang = _.filter(spang, function (point) {
                     return point.y <= paramsObject.filter;
@@ -373,7 +375,7 @@ function build(paramsObject) {
         ////trapezeMassCenter
 
         // at first create reverse array of shpangs
-        var simpleShpangs1 = _.compact(_.map(paramsObject.Ship.shpangs, function (spang) {
+        var simpleShpangs1 = _.compact(_.map(shpangsForWork, function (spang) {
             var PlusShpangs = spang;
             // add initialPlusX if exists
             if (paramsObject.initialPlusX) {
@@ -399,7 +401,7 @@ function build(paramsObject) {
 
                 if (paramsObject.different) {
 
-                    var differentTan = Math.tan(paramsObject.different);
+                    var differentTan = Math.tan(ShapeMath.getRad(paramsObject.different));
                     var newZ = ShapeMath.FloatMath().multiply(differentTan, 1);
                     p1 = new THREE.Vector3(0, paramsObject.filter + newZ, 1);
                     filterY = ShapeMath.returnYbyLine(p1, p2, spang[0].z);
@@ -428,7 +430,7 @@ function build(paramsObject) {
         }));
 
         if (paramsObject.UpDown) {
-            var simpleShpangs2 = _.compact(_.map(paramsObject.Ship.shpangs, function (spang) {
+            var simpleShpangs2 = _.compact(_.map(shpangsForWork, function (spang) {
                 var PlusShpangs = spang;
                 // add initialPlusX if exists
                 if (paramsObject.initialPlusX) {
@@ -452,7 +454,7 @@ function build(paramsObject) {
 
                     if (paramsObject.different) {
 
-                        var differentTan = Math.tan(paramsObject.different);
+                        var differentTan = Math.tan(ShapeMath.getRad(paramsObject.different));
                         var newZ = ShapeMath.FloatMath().multiply(differentTan, 1);
                         p1 = new THREE.Vector3(0, paramsObject.filter + newZ, 1);
                         filterY = ShapeMath.returnYbyLine(p1, p2, spang[0].z);

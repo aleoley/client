@@ -35,7 +35,7 @@
   </md-sidenav>
 </section>
 
-<div layout-gt-md="column">
+<div layout-gt-md="column" class="height100">
 
   <md-content md-theme="docs-dark" layout-gt-md="row" layout-padding>
 
@@ -68,7 +68,21 @@
         </md-button>
       </md-input-container>-->
 
+      <div layout-gt-sm="row">
+        <md-input-container class="md-block" flex-gt-sm>
+          <label>Filter</label>
+          <input ng-model="finded_filter.h">
+        </md-input-container>
 
+        <md-input-container class="md-block" flex-gt-sm>
+          <label>Different</label>
+          <input ng-model="finded_different.different">
+        </md-input-container>
+        <md-input-container class="md-block" flex-gt-sm>
+          <label>InitialPlusX</label>
+          <input ng-model="initialPlusX.x">
+        </md-input-container>
+      </div>
       <md-input-container>
         <md-button class="md-primary md-raised" ng-click="show()">
           Alert Dialog
@@ -99,45 +113,52 @@
           Toggle Sidenav
         </md-button>
       </md-input-container>
+      <md-input-container>
+        <md-button ng-click="cleareScene()" class="md-raised">
+          Cleare Scene
+        </md-button>
+      </md-input-container>
 
     </md-content>
 
   </div>
+  <md-content md-theme="docs-dark" flex layout-padding class="height100">
+    <!--Table Area -->
+    <div layout-gt-sm="row">
+      <md-content md-theme="docs-dark" flex-gt-md="column" layout-padding>
+        <table ng-table="tableParams" class="table" show-filter="true">
+          <tr ng-repeat="user in $data">
+            <td title="'Title'" filter="{ title: 'text'}" sortable="'title'">
+              {{user.title}}
+            </td>
+            <td title="'Measure of measurement'" filter="{ measurement: 'text'}" sortable="'measurement'">
+              {{user.measurement}}</td>
+            <td title="'Param Name'" filter="{ name: 'text'}" sortable="'name'">
+              {{user.paramName}}
+            </td>
+            <td title="'Value'" filter="{ value: 'number'}" sortable="'value'">
+              {{user.value}}
+            </td>
 
-  <!--Table Area -->
-  <div layout-gt-sm="row">
-    <md-content md-theme="docs-dark" flex-gt-md="column" layout-padding class="model">
-      <table ng-table="tableParams" class="table" show-filter="true">
-        <tr ng-repeat="user in $data">
-          <td title="'Title'" filter="{ title: 'text'}" sortable="'title'">
-            {{user.title}}
-          </td>
-          <td title="'Measure of measurement'" filter="{ measurement: 'text'}" sortable="'measurement'">
-            {{user.measurement}}</td>
-          <td title="'Param Name'" filter="{ name: 'text'}" sortable="'name'">
-            {{user.paramName}}
-          </td>
-          <td title="'Value'" filter="{ value: 'number'}" sortable="'value'">
-            {{user.value}}
-          </td>
-
-        </tr>
-      </table>
-    </md-content>
-  </div>
-
-  <!--Model Area-->
-  <div layout-gt-sm="row">
-    <md-content md-theme="docs-dark" flex-gt-md="column" layout-padding class="model">
-
-      <md-content class="model">
-        <div flex id="model" class="model">
-        </div>
+          </tr>
+        </table>
       </md-content>
+    </div>
 
 
-    </md-content>
-  </div>
+    <!--Model Area-->
+    <div layout-gt-sm="row">
+      <md-content md-theme="docs-dark" flex-gt-md="column" layout-padding>
+
+        <md-content class="model">
+          <div flex id="model" class="model">
+          </div>
+        </md-content>
+
+
+      </md-content>
+    </div>
+  </md-content>
 </div>
 
 

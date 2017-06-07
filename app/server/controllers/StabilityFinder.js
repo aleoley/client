@@ -65,95 +65,73 @@ function StabilizedByDifferent(paramsObject) {
         paramsObject.step = 0.1;
         var findedEtta = 100;
         var ResultObject = {};
-        var min2 = {};
-
         var interation = 0;
-
-        var start = -0.5;
-        var end = 0.5;
+        var start = -1;
         var resultArray = []
         var iteration = 0;
         var count = 0;
 
         async.whilst(
-            () => { return paramsObject.etta < findedEtta && iteration < 5; },
+            () => { return paramsObject.etta < findedEtta && iteration < 50; },
             (whilstCallback) => {
-                var PromisesArray = [];
-                for (var i = start; i < end; i = ShapeMath.FloatMath().add(i, paramsObject.step)) {
-                    PromisesArray.push(ModelBuilder.build(
-                        Object.assign({},
-                            {
-                                UpDown: false,
-                                different: MathJS.round(i, 10),
-                                createShape: false,
-                                mirrored: false,
-                            },
-                            paramsObject)
-                    ));
-                }
-                return Promise
-                    .all(PromisesArray)
+
+
+                start = start + paramsObject.step;
+
+                return ModelBuilder
+                    .build(Object.assign({},
+                        paramsObject, {
+                            initialPlusX: paramsObject.initialPlusX,
+                            UpDown: false,
+                            different: start,
+                            createShape: false,
+                            mirrored: false,
+                        }))
                     .then((result) => {
 
-
-                        ResultObject = _.minBy(result, (res) => {
-                            return MathJS.abs((MathJS.tan(res.different) * (paramsObject.searchMassCenter.y - res.MassCenter.y)) - res.MassCenter.z + paramsObject.searchMassCenter.z);
-                        });
-                        var nextResult = _.filter(result, (res) => {
-                            return MathJS.round(res.different, 10) !== MathJS.round(ResultObject.different, 10);
-                        });
-                        min2 = _.minBy(nextResult, (res) => {
-                            return MathJS.abs((MathJS.tan(res.different) * (paramsObject.searchMassCenter.y - res.MassCenter.y)) - res.MassCenter.z + paramsObject.searchMassCenter.z);
-                        });
-
-
-                        findedEtta = MathJS.abs((MathJS.tan(ResultObject.different) * (paramsObject.searchMassCenter.y - ResultObject.MassCenter.y)) - ResultObject.MassCenter.z + paramsObject.searchMassCenter.z);
-
-                        resultArray.push({
-                            iterrationEtta: _.map(result, (res) => {
-                                return {
-                                    etta: MathJS.abs((MathJS.tan(res.different) * (paramsObject.searchMassCenter.y - res.MassCenter.y)) - res.MassCenter.z + paramsObject.searchMassCenter.z),
-                                    different: res.different
-                                }
-                            }),
-                            findedEtta: findedEtta,
-                            iteration: iteration,
-                            different: ResultObject.different,
-                            min2: min2,
-                            ResultObject: ResultObject
-                        });
-                        // new iteration
-                        paramsObject.step = paramsObject.step * 0.1;
-                        if (ResultObject.different < min2.different) {
-                            start = ResultObject.different;
-                            end = min2.different;
-                        } else {
-                            end = ResultObject.different;
-                            start = min2.different;
+                        var thisEtta = getEtta(result, paramsObject);
+                        if (thisEtta > findedEtta) {
+                            paramsObject.step = - paramsObject.step / 3;
                         }
-
+                        resultArray.push({
+                            iteration: iteration,
+                            different: result.different,
+                            etta: thisEtta,
+                            step: paramsObject.step,
+                            start: start
+                        });
+                        findedEtta = thisEtta;
                         iteration++;
-                        // ResultObject = { findedEtta: p };
-                        //findedEtta = paramsObject.etta / 100;
-                        whilstCallback();
+                        ResultObject = result;
+                        return whilstCallback();
 
                     }).catch((err) => {
-                        whilstCallback(err);
+                        return whilstCallback(err);
                     });
             },
             (err, n) => {
                 if (err) {
-                    reject('ssss');
+                    reject(err);
                 } else {
                     // resolve({
                     //     resultArray: resultArray
                     // });
+                    ResultObject.resultArray = resultArray;
                     resolve(ResultObject);
                 }
             }
         );
 
     });
+}
+
+
+//x=y
+//y=z
+//z=x
+//tgFI(zg-zc)+xg-xc
+function getEtta(res, paramsObject) {
+    return MathJS.abs((MathJS.tan(ShapeMath.getRad(res.different)) * (paramsObject.searchMassCenter.y - res.MassCenter.y)) - res.MassCenter.z + paramsObject.searchMassCenter.z);
 }
 
 exports.Stabilized = Stabilized;

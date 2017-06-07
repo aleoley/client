@@ -5,8 +5,11 @@ var Detector = require("./node_modules/three.js/examples/js/Detector");
 var Stats = require("./node_modules/three.js/examples/js/libs/stats.min.js");
 var shpangs = require('./sheapTest.js');
 var natali = require('./natali.js').natali;
+//var natali = require('./testShape.js').TestShape;
+
 var _ = require('lodash');
 var ModelBuilder = require('./helpers/modelBuilder');
+var ShapeMath = require('./helpers/shapeMath').ShapeMath;
 var async = require('async');
 const MathJS = require('mathjs');
 
@@ -34,18 +37,22 @@ angular.module('app')
             $scope.model3d = false;
             $scope.model2d = false;
             $scope.finded_different = {
-                different: 0.0023
+                different: 0.14320987654320974
             }
             $scope.finded_filter = {
                 h: 3.3
             }
+
+            $scope.initialPlusX = {
+                x: 0
+            };
             $scope.ResultShipData = {};
 
             $scope.setWidth = function () {
                 renderer.setSize($scope.modelSize.width, $scope.modelSize.height);
             }
             var loader = new THREE.TextureLoader();
-            var texture = loader.load('./assets/materials/monkey.png');
+            var texture = loader.load('./assets/materials/round.png');
 
 
             if (!Detector.webgl) Detector.addGetWebGLMessage();
@@ -151,11 +158,12 @@ angular.module('app')
             };
 
             $scope.stabilazed = () => {
+                console.log('$scope.initialPlusX.x', $scope.initialPlusX.x);
                 $scope.startSpin();
                 ModelService
                     .Ship
                     .Stabilazed({
-                        // initialPlusX: 0.004,
+                        initialPlusX: parseFloat($scope.initialPlusX.x),
                         Ship: $scope.Ship,
                         searchVolume: $scope.Ship.Weight / 1.025,
                         step: 0.1,
@@ -174,10 +182,10 @@ angular.module('app')
                 ModelService
                     .Ship
                     .StabilazedDifferent({
-                        //initialPlusX: 0.004,
+                        initialPlusX: parseFloat($scope.initialPlusX.x),
                         Ship: $scope.Ship,
                         searchMassCenter: new THREE.Vector3(0, 4.81, -2.33),
-                        etta: 0.1,
+                        etta: 0.01,
                         filter: $scope.finded_filter.h,
                         water: 1.025,
                     })
@@ -192,9 +200,9 @@ angular.module('app')
                 $scope.startSpin();
                 ModelBuilder
                     .build({
-                        //initialPlusX: 0.004,
-                        Ship: $scope.Ship,
+                        initialPlusX: parseFloat($scope.initialPlusX.x),
                         initialTimeout: 0,
+                        Ship: $scope.Ship,
                         filter: $scope.finded_filter.h,
                         different: $scope.finded_different.different,
                         createShape: true,
@@ -217,7 +225,7 @@ angular.module('app')
                         $scope.tableParams = new NgTableParams({}, { dataset: dataSet });
                         //xc=xg-(zc-zg)*tg 
                         //zc=zg-(yc-yg)*tg
-                        console.log('etta', MathJS.abs((MathJS.tan(res[0].different) * (4.81 - res[0].MassCenter.y)) + (-2.33) - res[0].MassCenter.z));
+                        console.log('etta', MathJS.abs((MathJS.tan(ShapeMath.getRad(res[0].different)) * (4.81 - res[0].MassCenter.y)) + (-2.33) - res[0].MassCenter.z));
                         var shipGroup = new THREE.Group(res[1].group);
                         console.log('shipGroup', shipGroup);
                         scene.add(shipGroup);
@@ -231,6 +239,12 @@ angular.module('app')
             }
             $scope.stopSpin = function () {
                 usSpinnerService.stop('spinner-1');
+            }
+            $scope.cleareScene = () => {
+                while (scene.children.length > 0) {
+                    scene.remove(scene.children[0]);
+                }
+                init();
             }
 
 

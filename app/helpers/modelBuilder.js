@@ -175,7 +175,7 @@ function trapezeSqueare(a, b, c, d) {
     var squeare = (h * (a + b)) / 2;
 
     if (isNaN(squeare)) {
-
+        console.log('NAN SQUERE')
         squeare = 0;
 
     }
@@ -446,13 +446,24 @@ function BuildVolume(paramsObject) {
 
                     addShape(shape, paramsObject, function (massCenter) {
                         massCenter = ShapeMath.getMassCenter(bottom, head);
-                        // addPoint(massCenter.FirstPyramidMassCenter, paramsObject);
-                        // addPoint(massCenter.SecondPyramidMassCenter, paramsObject);
-                        firstPartMassCenter_X += massCenter.FirstPyramidMassCenter.x * volume.TrapezePyramidVolume + massCenter.SecondPyramidMassCenter.x * volume.TrianglePyramidVolume;
+                        if (massCenter.massCenter) {
+                            // addPoint(massCenter.massCenter, paramsObject);
+                            firstPartMassCenter_X += massCenter.massCenter.x * volume.sum;
 
-                        firstPartMassCenter_Y += massCenter.FirstPyramidMassCenter.y * volume.TrapezePyramidVolume + massCenter.SecondPyramidMassCenter.y * volume.TrianglePyramidVolume;
+                            firstPartMassCenter_Y += massCenter.massCenter.y * volume.sum;
 
-                        firstPartMassCenter_Z += massCenter.FirstPyramidMassCenter.z * volume.TrapezePyramidVolume + massCenter.SecondPyramidMassCenter.z * volume.TrianglePyramidVolume;
+                            firstPartMassCenter_Z += massCenter.massCenter.z * volume.sum;
+                        } else {
+                            // addPoint(massCenter.FirstPyramidMassCenter, paramsObject);
+                            // addPoint(massCenter.SecondPyramidMassCenter, paramsObject);
+                            firstPartMassCenter_X += massCenter.FirstPyramidMassCenter.x * volume.TrapezePyramidVolume + massCenter.SecondPyramidMassCenter.x * volume.TrianglePyramidVolume;
+
+                            firstPartMassCenter_Y += massCenter.FirstPyramidMassCenter.y * volume.TrapezePyramidVolume + massCenter.SecondPyramidMassCenter.y * volume.TrianglePyramidVolume;
+
+                            firstPartMassCenter_Z += massCenter.FirstPyramidMassCenter.z * volume.TrapezePyramidVolume + massCenter.SecondPyramidMassCenter.z * volume.TrianglePyramidVolume;
+                        }
+
+
 
                         if (asyncJ >= beforeShapng.length) {
 
@@ -486,14 +497,22 @@ function BuildVolume(paramsObject) {
 
                             addShape(shape2, paramsObject, function (massCenter2) {
                                 massCenter2 = ShapeMath.getMassCenter(bottom2, head2);
-                                // addPoint(massCenter2.FirstPyramidMassCenter, paramsObject);
-                                // addPoint(massCenter2.SecondPyramidMassCenter, paramsObject);
-                                firstPartMassCenter_X += massCenter2.FirstPyramidMassCenter.x * volume.TrapezePyramidVolume + massCenter2.SecondPyramidMassCenter.x * volume.TrianglePyramidVolume;
+                                if (massCenter2.massCenter) {
+                                    // addPoint(massCenter.massCenter, paramsObject);
+                                    firstPartMassCenter_X += massCenter2.massCenter.x * volume2.sum;
 
-                                firstPartMassCenter_Y += massCenter2.FirstPyramidMassCenter.y * volume.TrapezePyramidVolume + massCenter.SecondPyramidMassCenter.y * volume.TrianglePyramidVolume;
+                                    firstPartMassCenter_Y += massCenter2.massCenter.y * volume2.sum;
 
-                                firstPartMassCenter_Z += massCenter2.FirstPyramidMassCenter.z * volume.TrapezePyramidVolume + massCenter2.SecondPyramidMassCenter.z * volume.TrianglePyramidVolume;
+                                    firstPartMassCenter_Z += massCenter2.massCenter.z * volume2.sum;
+                                } else {
+                                    // addPoint(massCenter2.FirstPyramidMassCenter, paramsObject);
+                                    // addPoint(massCenter2.SecondPyramidMassCenter, paramsObject);
+                                    firstPartMassCenter_X += massCenter2.FirstPyramidMassCenter.x * volume2.TrapezePyramidVolume + massCenter2.SecondPyramidMassCenter.x * volume2.TrianglePyramidVolume;
 
+                                    firstPartMassCenter_Y += massCenter2.FirstPyramidMassCenter.y * volume2.TrapezePyramidVolume + massCenter2.SecondPyramidMassCenter.y * volume2.TrianglePyramidVolume;
+
+                                    firstPartMassCenter_Z += massCenter2.FirstPyramidMassCenter.z * volume2.TrapezePyramidVolume + massCenter2.SecondPyramidMassCenter.z * volume2.TrianglePyramidVolume;
+                                }
                                 asyncJ++;
                                 eachCallback2();
                             });
@@ -542,15 +561,22 @@ function BuildVolume(paramsObject) {
 
                     addShape(shape, paramsObject, function (massCenter) {
                         massCenter = ShapeMath.getMassCenter(bottom, head);
+                        if (massCenter.massCenter) {
+                            // addPoint(massCenter.massCenter, paramsObject);
+                            firstPartMassCenter_X += massCenter.massCenter.x * volume.sum;
 
-                        // addPoint(massCenter.FirstPyramidMassCenter, paramsObject);
-                        // addPoint(massCenter.SecondPyramidMassCenter, paramsObject);
-                        firstPartMassCenter_X += massCenter.FirstPyramidMassCenter.x * volume.TrapezePyramidVolume + massCenter.SecondPyramidMassCenter.x * volume.TrianglePyramidVolume;
+                            firstPartMassCenter_Y += massCenter.massCenter.y * volume.sum;
 
-                        firstPartMassCenter_Y += massCenter.FirstPyramidMassCenter.y * volume.TrapezePyramidVolume + massCenter.SecondPyramidMassCenter.y * volume.TrianglePyramidVolume;
+                            firstPartMassCenter_Z += massCenter.massCenter.z * volume.sum;
+                        } else {
+                            // addPoint(massCenter.FirstPyramidMassCenter, paramsObject);
+                            // addPoint(massCenter.SecondPyramidMassCenter, paramsObject);
+                            firstPartMassCenter_X += massCenter.FirstPyramidMassCenter.x * volume.TrapezePyramidVolume + massCenter.SecondPyramidMassCenter.x * volume.TrianglePyramidVolume;
 
-                        firstPartMassCenter_Z += massCenter.FirstPyramidMassCenter.z * volume.TrapezePyramidVolume + massCenter.SecondPyramidMassCenter.z * volume.TrianglePyramidVolume;
+                            firstPartMassCenter_Y += massCenter.FirstPyramidMassCenter.y * volume.TrapezePyramidVolume + massCenter.SecondPyramidMassCenter.y * volume.TrianglePyramidVolume;
 
+                            firstPartMassCenter_Z += massCenter.FirstPyramidMassCenter.z * volume.TrapezePyramidVolume + massCenter.SecondPyramidMassCenter.z * volume.TrianglePyramidVolume;
+                        }
 
                         if (asyncJ >= thisShpang.length) {
                             asyncJ++;
@@ -585,13 +611,23 @@ function BuildVolume(paramsObject) {
 
                             addShape(shape2, paramsObject, function (massCenter2) {
                                 massCenter2 = ShapeMath.getMassCenter(bottom2, head2);
-                                // addPoint(massCenter2.FirstPyramidMassCenter, paramsObject);
-                                // addPoint(massCenter2.SecondPyramidMassCenter, paramsObject);
-                                firstPartMassCenter_X += massCenter2.FirstPyramidMassCenter.x * volume.TrapezePyramidVolume + massCenter2.SecondPyramidMassCenter.x * volume.TrianglePyramidVolume;
+                                if (massCenter2.massCenter) {
+                                    // addPoint(massCenter.massCenter, paramsObject);
+                                    firstPartMassCenter_X += massCenter2.massCenter.x * volume2.sum;
 
-                                firstPartMassCenter_Y += massCenter2.FirstPyramidMassCenter.y * volume.TrapezePyramidVolume + massCenter.SecondPyramidMassCenter.y * volume.TrianglePyramidVolume;
+                                    firstPartMassCenter_Y += massCenter2.massCenter.y * volume2.sum;
 
-                                firstPartMassCenter_Z += massCenter2.FirstPyramidMassCenter.z * volume.TrapezePyramidVolume + massCenter2.SecondPyramidMassCenter.z * volume.TrianglePyramidVolume;
+                                    firstPartMassCenter_Z += massCenter2.massCenter.z * volume2.sum;
+                                } else {
+                                    // addPoint(massCenter2.FirstPyramidMassCenter, paramsObject);
+                                    // addPoint(massCenter2.SecondPyramidMassCenter, paramsObject);
+                                    firstPartMassCenter_X += massCenter2.FirstPyramidMassCenter.x * volume2.TrapezePyramidVolume + massCenter2.SecondPyramidMassCenter.x * volume2.TrianglePyramidVolume;
+
+                                    firstPartMassCenter_Y += massCenter2.FirstPyramidMassCenter.y * volume2.TrapezePyramidVolume + massCenter2.SecondPyramidMassCenter.y * volume2.TrianglePyramidVolume;
+
+                                    firstPartMassCenter_Z += massCenter2.FirstPyramidMassCenter.z * volume2.TrapezePyramidVolume + massCenter2.SecondPyramidMassCenter.z * volume2.TrianglePyramidVolume;
+                                }
+
 
                                 asyncJ++;
                                 eachCallback2();
@@ -634,7 +670,6 @@ function BuildVolume(paramsObject) {
                 console.log('massCenter', massCenter);
                 addPoint(massCenter, paramsObject);
 
-
                 resolve({
                     TonnVolume: outerTonn,
                     Volume: outer,
@@ -643,7 +678,15 @@ function BuildVolume(paramsObject) {
                     different: paramsObject.different,
                     filteredMassCenter: paramsObject.filteredMassCenter,
                     FilteredPlaneSquere: paramsObject.FilteredPlaneSquere,
-                    group: paramsObject.group
+                    group: paramsObject.group,
+                    Tw: paramsObject.Tw.y,
+                    Tf: paramsObject.Tf.y,
+                    Ta: paramsObject.Ta.y,
+                    TfTa: ShapeMath.FloatMath().subtract(paramsObject.Tf.y, paramsObject.Ta.y),
+                    initialPlusX: paramsObject.initialPlusX,
+                    newfilteredSquere: paramsObject.newfilteredSquere * 2,
+                    newMassCenter: paramsObject.newMassCenter
+
                 });
             } else {
                 reject(err);
@@ -662,11 +705,13 @@ function build(paramsObject) {
         if (!paramsObject.different) {
             paramsObject.different = 0;
         }
+
+        var shpangsForWork = JSON.parse(JSON.stringify(paramsObject.Ship.shpangs));
         console.log('ModelBuilder', paramsObject);
         //if different we must find mass center of all squeare by filter
         var defaultPoint = new THREE.Vector3(0, 0, 0);
         if ((paramsObject.different || paramsObject.different === 0) && paramsObject.filter) {
-            var FilteredPlane = _.compact(_.map(paramsObject.Ship.shpangs, function (spang) {
+            var FilteredPlane = _.compact(_.map(shpangsForWork, function (spang) {
 
                 var midddleShpang = _.filter(spang, function (point) {
                     return point.y <= paramsObject.filter;
@@ -692,7 +737,63 @@ function build(paramsObject) {
 
             for (var i = 1; i < FilteredPlane.length; i++) {
 
-                var midddleSqquere = trapezeSqueare(
+
+            var thisPoint = FilteredPlane[i];
+            var previousPoint = FilteredPlane[i - 1];
+            var midddleSqquere = 0;
+            var middleMassCenter = new THREE.Vector3();
+            if (thisPoint.x === 0) {
+                midddleSqquere = triangleSqueare(
+                    distanceVector(
+                        previousPoint,
+                        proectionX(previousPoint)
+                    ),
+                    distanceVector(
+                        thisPoint,
+                        previousPoint
+                    ),
+                    distanceVector(
+                        proectionX(previousPoint),
+                        thisPoint
+                    )
+                )
+                addShape([
+                    previousPoint,
+                    proectionX(previousPoint),
+                    thisPoint
+                ],
+                    Object.assign({}, {
+                        visible: true
+                    }, paramsObject),
+                    () => { });
+            }
+            if (previousPoint.x === 0) {
+                midddleSqquere = triangleSqueare(
+                    distanceVector(
+                        thisPoint,
+                        proectionX(thisPoint)
+                    ),
+                    distanceVector(
+                        thisPoint,
+                        previousPoint
+                    ),
+                    distanceVector(
+                        proectionX(thisPoint),
+                        previousPoint
+                    )
+                )
+                addShape([
+                    thisPoint,
+                    proectionX(thisPoint),
+                    previousPoint
+                ],
+                    Object.assign({}, {
+                        visible: true
+                    }, paramsObject),
+                    () => { });
+            }
+            if (previousPoint.x !== 0 && thisPoint.x !== 0) {
+                midddleSqquere = trapezeSqueare(
                     distanceVector(
                         FilteredPlane[i - 1],
                         proectionX(FilteredPlane[i - 1])
@@ -710,9 +811,34 @@ function build(paramsObject) {
                         proectionX(FilteredPlane[i])
                     )
                 );
+                addShape(
+                    [FilteredPlane[i],
+                    proectionX(FilteredPlane[i]),
+                    FilteredPlane[i - 1],
+                    proectionX(FilteredPlane[i - 1])
+                    ],
+                    Object.assign({}, {
+                        visible: true
+                    }, paramsObject),
+                    () => { });
+            }
 
-
-                var middleMassCenter = ShapeMath.trapezeMassCenter([
+            if (thisPoint.x === 0) {
+                middleMassCenter = ShapeMath.triangleMassCenter(
+                    previousPoint,
+                    proectionX(previousPoint),
+                    thisPoint
+                );
+            }
+            if (previousPoint.x === 0) {
+                middleMassCenter = ShapeMath.triangleMassCenter(
+                    thisPoint,
+                    proectionX(thisPoint),
+                    previousPoint
+                );
+            }
+            if (previousPoint.x !== 0 && thisPoint.x !== 0) {
+                middleMassCenter = ShapeMath.trapezeMassCenter([
                     FilteredPlane[i - 1],
                     proectionX(FilteredPlane[i - 1])
                 ], [
@@ -720,12 +846,15 @@ function build(paramsObject) {
                         proectionX(FilteredPlane[i])
                     ]
                 );
-                FilteredPlaneSquere += midddleSqquere;
+            }
 
 
-                FilteredPlaneMassCenter_X += middleMassCenter.x * midddleSqquere;
-                FilteredPlaneMassCenter_Y += middleMassCenter.y * midddleSqquere;
-                FilteredPlaneMassCenter_Z += middleMassCenter.z * midddleSqquere;
+            newfilteredSquere += midddleSqquere;
+
+
+            FilteredPlaneMassCenter_X += middleMassCenter.x * midddleSqquere;
+            FilteredPlaneMassCenter_Y += middleMassCenter.y * midddleSqquere;
+            FilteredPlaneMassCenter_Z += middleMassCenter.z * midddleSqquere;
 
             }
             var RealMassCenter_L_X = ShapeMath.FloatMath().divide(FilteredPlaneMassCenter_X, FilteredPlaneSquere);
@@ -752,10 +881,13 @@ function build(paramsObject) {
         ////trapezeMassCenter
 
         // at first create reverse array of shpangs
-        var simpleShpangs1 = _.compact(_.map(paramsObject.Ship.shpangs, function (spang) {
-            var PlusShpangs = spang;
+
+        var newFilteredPlane = [];
+        var simpleShpangs1 = _.compact(_.map(shpangsForWork, function (spang) {
+            var PlusShpangs = _.clone(spang);
             // add initialPlusX if exists
             if (paramsObject.initialPlusX) {
+                console.log('initialPlusX1')
                 PlusShpangs = _.map(spang, function (point) {
                     if (point.x !== 0) {
                         var sum = Math.round((paramsObject.initialPlusX + point.x) * 1e12) / 1e12;
@@ -770,15 +902,13 @@ function build(paramsObject) {
             if (paramsObject.filter) {
                 var filterY = paramsObject.filter;
 
-
-
                 var p1 = new THREE.Vector3(defaultPoint.x, paramsObject.filter, defaultPoint.z + 1);
                 var p2 = new THREE.Vector3(defaultPoint.x, paramsObject.filter, defaultPoint.z);
                 var p3 = new THREE.Vector3(defaultPoint.x + 1, paramsObject.filter, defaultPoint.z);
 
                 if (paramsObject.different || paramsObject.different === 0) {
 
-                    var differentTan = Math.tan(paramsObject.different);
+                    var differentTan = Math.tan(ShapeMath.getRad(paramsObject.different));
                     var newZ = ShapeMath.FloatMath().multiply(differentTan, 1);
                     p1 = new THREE.Vector3(0, paramsObject.filter + newZ, 1);
                     filterY = ShapeMath.returnYbyLine(p1, p2, spang[0].z);
@@ -789,37 +919,219 @@ function build(paramsObject) {
                 midddleShpang = _.filter(PlusShpangs, function (point) {
                     return point.y <= filterY;
                 });
-
+                if (midddleShpang.length === 0) {
+                    console.log('spang', spang);
+                }
                 if (spang[midddleShpang.length] && midddleShpang.length > 0 && midddleShpang.length !== spang.length) {
 
                     var proectionPoint = ShapeMath.intersectionPlaneLine([p1, p2, p3], [spang[midddleShpang.length], spang[midddleShpang.length - 1]]);
                     midddleShpang.push(proectionPoint);
+
                 }
 
             }
-
+            var out = _.reverse(midddleShpang);
+            newFilteredPlane.push(_.head(midddleShpang));
             if (midddleShpang.length > 0) {
-                return _.reverse(midddleShpang);
+                return out;
             } else {
                 return false;
             }
 
         }));
+        //------------------------- TESTS-----------
+        var FilteredPlaneMassCenter_X1 = 0;
+        var FilteredPlaneMassCenter_Y1 = 0;
+        var FilteredPlaneMassCenter_Z1 = 0;
+        var newfilteredSquere = 0;
+        newFilteredPlane = _.compact(newFilteredPlane);
+        console.log('newFilteredPlane', newFilteredPlane);
+        for (var i = 1; i < newFilteredPlane.length; i++) {
+
+            var thisPoint = newFilteredPlane[i];
+            var previousPoint = newFilteredPlane[i - 1];
+            var midddleSqquere = 0;
+            var middleMassCenter = new THREE.Vector3();
+            if (thisPoint.x === 0) {
+                midddleSqquere = triangleSqueare(
+                    distanceVector(
+                        previousPoint,
+                        proectionX(previousPoint)
+                    ),
+                    distanceVector(
+                        thisPoint,
+                        previousPoint
+                    ),
+                    distanceVector(
+                        proectionX(previousPoint),
+                        thisPoint
+                    )
+                )
+                addShape([
+                    previousPoint,
+                    proectionX(previousPoint),
+                    thisPoint
+                ],
+                    Object.assign({}, {
+                        visible: true
+                    }, paramsObject),
+                    () => { });
+            }
+            if (previousPoint.x === 0) {
+                midddleSqquere = triangleSqueare(
+                    distanceVector(
+                        thisPoint,
+                        proectionX(thisPoint)
+                    ),
+                    distanceVector(
+                        thisPoint,
+                        previousPoint
+                    ),
+                    distanceVector(
+                        proectionX(thisPoint),
+                        previousPoint
+                    )
+                )
+                addShape([
+                    thisPoint,
+                    proectionX(thisPoint),
+                    previousPoint
+                ],
+                    Object.assign({}, {
+                        visible: true
+                    }, paramsObject),
+                    () => { });
+            }
+            if (previousPoint.x !== 0 && thisPoint.x !== 0) {
+                midddleSqquere = trapezeSqueare(
+                    distanceVector(
+                        newFilteredPlane[i - 1],
+                        proectionX(newFilteredPlane[i - 1])
+                    ),
+                    distanceVector(
+                        newFilteredPlane[i],
+                        proectionX(newFilteredPlane[i])
+                    ),
+                    distanceVector(
+                        newFilteredPlane[i],
+                        newFilteredPlane[i - 1]
+                    ),
+                    distanceVector(
+                        proectionX(newFilteredPlane[i - 1]),
+                        proectionX(newFilteredPlane[i])
+                    )
+                );
+                addShape(
+                    [newFilteredPlane[i],
+                    proectionX(newFilteredPlane[i]),
+                    newFilteredPlane[i - 1],
+                    proectionX(newFilteredPlane[i - 1])
+                    ],
+                    Object.assign({}, {
+                        visible: true
+                    }, paramsObject),
+                    () => { });
+            }
+
+            if (thisPoint.x === 0) {
+                middleMassCenter = ShapeMath.triangleMassCenter(
+                    previousPoint,
+                    proectionX(previousPoint),
+                    thisPoint
+                );
+            }
+            if (previousPoint.x === 0) {
+                middleMassCenter = ShapeMath.triangleMassCenter(
+                    thisPoint,
+                    proectionX(thisPoint),
+                    previousPoint
+                );
+            }
+            if (previousPoint.x !== 0 && thisPoint.x !== 0) {
+                middleMassCenter = ShapeMath.trapezeMassCenter([
+                    newFilteredPlane[i - 1],
+                    proectionX(newFilteredPlane[i - 1])
+                ], [
+                        newFilteredPlane[i],
+                        proectionX(newFilteredPlane[i])
+                    ]
+                );
+            }
+
+
+            newfilteredSquere += midddleSqquere;
+
+
+            FilteredPlaneMassCenter_X1 += middleMassCenter.x * midddleSqquere;
+            FilteredPlaneMassCenter_Y1 += middleMassCenter.y * midddleSqquere;
+            FilteredPlaneMassCenter_Z1 += middleMassCenter.z * midddleSqquere;
+
+        }
+        var RealMassCenter_L_X = ShapeMath.FloatMath().divide(FilteredPlaneMassCenter_X1, newfilteredSquere);
+        var RealMassCenter_L_Y = ShapeMath.FloatMath().divide(FilteredPlaneMassCenter_Y1, newfilteredSquere);
+        var RealMassCenter_L_Z = ShapeMath.FloatMath().divide(FilteredPlaneMassCenter_Z1, newfilteredSquere);
+
+        var RealMassCenter_R_X = - RealMassCenter_L_X;
+        var RealMassCenter_R_Y = RealMassCenter_L_Y;
+        var RealMassCenter_R_Z = RealMassCenter_L_Z;
+
+        var RealMassCenter_X = (RealMassCenter_L_X * newfilteredSquere + RealMassCenter_R_X * newfilteredSquere) / (newfilteredSquere * 2);
+        var RealMassCenter_Y = (RealMassCenter_L_Y * newfilteredSquere + RealMassCenter_R_Y * newfilteredSquere) / (newfilteredSquere * 2);
+        var RealMassCenter_Z = (RealMassCenter_L_Z * newfilteredSquere + RealMassCenter_R_Z * newfilteredSquere) / (newfilteredSquere * 2);
+
+        var newMassCenter = new THREE.Vector3(RealMassCenter_X, RealMassCenter_Y, RealMassCenter_Z);
+
+        paramsObject.newfilteredSquere = newfilteredSquere;
+        paramsObject.newMassCenter = newMassCenter;
+        //------------------------- TESTS-----------
+
+
+        if (paramsObject.filter) {
+            var p1 = new THREE.Vector3(defaultPoint.x, paramsObject.filter, defaultPoint.z + 1);
+            var p2 = new THREE.Vector3(defaultPoint.x, paramsObject.filter, defaultPoint.z);
+            var p3 = new THREE.Vector3(defaultPoint.x + 1, paramsObject.filter, defaultPoint.z);
+            if (paramsObject.different) {
+                var differentTan = Math.tan(ShapeMath.getRad(paramsObject.different));
+                var newZ = ShapeMath.FloatMath().multiply(differentTan, 1);
+                p1 = new THREE.Vector3(0, paramsObject.filter + newZ, 1);
+            }
+            console.log('defaultPoint', defaultPoint);
+
+            paramsObject.Tw = ShapeMath.intersectionPlaneLine([
+                p1,
+                p2,
+                p3
+            ], [
+                    new THREE.Vector3(0, 0, 0),
+                    new THREE.Vector3(0, paramsObject.filter, 0),
+
+                ]);
+            paramsObject.Tf = ShapeMath.intersectionPlaneLine([
+                p1,
+                p2,
+                p3
+            ], [
+                    new THREE.Vector3(0, 0, ShapeMath.FloatMath().divide(paramsObject.Ship.Length, 2)),
+                    new THREE.Vector3(0, paramsObject.filter, ShapeMath.FloatMath().divide(paramsObject.Ship.Length, 2)),
+
+                ]);
+            paramsObject.Ta = ShapeMath.intersectionPlaneLine([
+                p1,
+                p2,
+                p3
+            ], [
+                    new THREE.Vector3(0, 0, -ShapeMath.FloatMath().divide(paramsObject.Ship.Length, 2)),
+                    new THREE.Vector3(0, paramsObject.filter, -ShapeMath.FloatMath().divide(paramsObject.Ship.Length, 2)),
+
+                ]);
+
+        }
+
 
         if (paramsObject.UpDown) {
-            var simpleShpangs2 = _.compact(_.map(paramsObject.Ship.shpangs, function (spang) {
+            var simpleShpangs2 = _.compact(_.map(shpangsForWork, function (spang) {
                 var PlusShpangs = spang;
-                // add initialPlusX if exists
-                if (paramsObject.initialPlusX) {
-                    PlusShpangs = _.map(spang, function (point) {
-                        if (point.x !== 0) {
-                            var sum = Math.round((paramsObject.initialPlusX + point.x) * 1e12) / 1e12;
-                            point.x = sum;
-                        }
 
-                        return point;
-                    });
-                }
                 // filtered if exists
                 var midddleShpang = PlusShpangs;
                 if (paramsObject.filter) {
@@ -831,7 +1143,7 @@ function build(paramsObject) {
 
                     if (paramsObject.different || paramsObject.different === 0) {
 
-                        var differentTan = Math.tan(paramsObject.different);
+                        var differentTan = Math.tan(ShapeMath.getRad(paramsObject.different));
                         var newZ = ShapeMath.FloatMath().multiply(differentTan, 1);
                         p1 = new THREE.Vector3(0, ShapeMath.FloatMath().add(paramsObject.filter, newZ), 1);
                         filterY = ShapeMath.returnYbyLine(p1, p2, spang[0].z);
@@ -868,12 +1180,12 @@ function build(paramsObject) {
             // console.log('simpleShpangs2', simpleShpangs2);
             Promise.all([
                 BuildVolume(Object.assign({}, {
-                    
+
                     simpleShpangs: simpleShpangs1,
                     color: '#770406'
                 }, paramsObject)),
                 BuildVolume(Object.assign({}, {
-                
+
                     color: '#51565e',
                     simpleShpangs: simpleShpangs2
                 }, paramsObject)),

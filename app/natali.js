@@ -1,6 +1,7 @@
 var natali = {
     name: 'Natali',
     Weight: 2513.73,
+    Length:74.80,
     base: [
         {
             SpangNum: 0,

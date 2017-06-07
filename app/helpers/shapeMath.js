@@ -103,34 +103,231 @@ function getMassCenter(bottom, head) {
     // };
 
 
-    //First Pyramid Mass Centers
-    var trapezeMassCenter1 = {};
-    if (bottom[2].x === bottom[3].x && bottom[2].y === bottom[3].y && bottom[2].z === bottom[3].z) {
-
-        trapezeMassCenter1 = triangleMassCenter(bottom[0], bottom[1], bottom[2]);
-    } else {
-
-        trapezeMassCenter1 = trapezeMassCenter([bottom[0], bottom[2]], [bottom[1], bottom[3]]);
+    //----------------------------------------- START BOTTOM ----------------------------------------
+    var BottomMassCenter = {};
+    var bottomType = 0;
+    //1.Bottom is Triangle
+    //1.1 bottomHead Triangle
+    if (bottom[0].x === bottom[2].x && bottom[0].y === bottom[2].y && bottom[0].z === bottom[2].z) {
+        BottomMassCenter = triangleMassCenter(bottom[0], bottom[1], bottom[3]);
+        bottomType = 'triangle1';
+    }
+    //1.2 bottomBottom Triangle
+    if (bottom[1].x === bottom[3].x && bottom[1].y === bottom[3].y && bottom[1].z === bottom[3].z) {
+        BottomMassCenter = triangleMassCenter(bottom[0], bottom[2], bottom[3]);
+        bottomType = 'triangle2';
+    }
+    //2.Bottom is Trapeze
+    if (bottom[0].x !== bottom[2].x && bottom[1].x !== bottom[3].x) {
+        BottomMassCenter = trapezeMassCenter([bottom[0], bottom[2]], [bottom[1], bottom[3]]);
+        bottomType = 'trapeze';
+    }
+    //3.Bottom is Line
+    if ((bottom[0].x === bottom[2].x && bottom[0].y === bottom[2].y && bottom[0].z === bottom[2].z) &&
+        (bottom[1].x === bottom[3].x && bottom[1].y === bottom[3].y && bottom[1].z === bottom[3].z)) {
+        BottomMassCenter = vertexCenter(bottom[0], bottom[1]);
+        bottomType = 'line';
+    }
+    //4.Bottom is Point
+    if ((bottom[0].x === bottom[2].x && bottom[0].y === bottom[2].y && bottom[0].z === bottom[2].z) &&
+        (bottom[1].x === bottom[3].x && bottom[1].y === bottom[3].y && bottom[1].z === bottom[3].z) &&
+        (bottom[2].x === bottom[3].x && bottom[2].y === bottom[3].y && bottom[2].z === bottom[3].z)
+    ) {
+        BottomMassCenter = bottom[0];
+        bottomType = 'point';
     }
 
-    var triangleFirstMassCenter = triangleMassCenter(bottom[0], bottom[1], head[0]);
-    var FirstPyramidMassCenter = {};
-    if (bottom[2].x === bottom[3].x && bottom[2].y === bottom[3].y && bottom[2].z === bottom[3].z) {
-        FirstPyramidMassCenter = intersection(triangleFirstMassCenter, bottom[3], trapezeMassCenter1, head[0]);
-    } else {
-        FirstPyramidMassCenter = intersectionPlaneLine([triangleFirstMassCenter, bottom[2], bottom[3]], [trapezeMassCenter1, head[0]]);
+    //----------------------------------------- END BOTTOM ----------------------------------------
+
+
+
+    //----------------------------------------- START HEAD ----------------------------------------
+    var headType = 0;
+    //1.Head is Line
+    if (head[0].x !== head[1].x) {
+        headType = 'line'
     }
-    //  Second Pyramid Mass Center
-    var triangleFirstMassCenter1 = triangleMassCenter(bottom[2], bottom[3], head[1]);
-    var triangleFirstMassCenter2 = triangleMassCenter(bottom[2], bottom[3], head[0]);
+    //2.Head is Point
+    if (head[0].x === head[1].x && head[0].y === head[1].y && head[0].z === head[1].z) {
+        headType = 'point'
+    }
 
-    var SecondPyramidMassCenter = intersection(triangleFirstMassCenter1, head[0], triangleFirstMassCenter2, head[1]);
+    //----------------------------------------- END HEAD ----------------------------------------
 
-    return {
-        FirstPyramidMassCenter: FirstPyramidMassCenter,
-        SecondPyramidMassCenter: SecondPyramidMassCenter
-    };
+
+    switch (true) {
+        case bottomType === 'trapeze' && headType === 'line':
+            //----------------------------------FirstPyramidMassCenter---------------------------------------------
+            var FirstPyramidMassCenter = inDivide(BottomMassCenter, head[0], 1, 4);
+
+            //----------------------------------SecondPyramidMassCenter---------------------------------------------
+            var triangleFirstMassCenter1 = triangleMassCenter(bottom[2], bottom[3], head[1]);
+            var triangleFirstMassCenter2 = triangleMassCenter(bottom[2], bottom[3], head[0]);
+            var SecondPyramidMassCenter = intersection(triangleFirstMassCenter1, head[0], triangleFirstMassCenter2, head[1]);
+
+            //------------------------------------------RETURN------------------------------------------------------
+            massCenterCheck(FirstPyramidMassCenter, bottom, head);
+
+            massCenterCheck(SecondPyramidMassCenter, bottom, head);
+            return {
+                FirstPyramidMassCenter: FirstPyramidMassCenter,
+                SecondPyramidMassCenter: SecondPyramidMassCenter
+            }
+        case bottomType === 'trapeze' && headType === 'point':
+
+            massCenterCheck(inDivide(BottomMassCenter, head[0], 1, 4), bottom, head);
+            return {
+                massCenter: inDivide(BottomMassCenter, head[0], 1, 4)
+            }
+        case bottomType === 'triangle1' && headType === 'line':
+
+            //----------------------------------FirstPyramidMassCenter---------------------------------------------
+            var secondTriangleMassCenter = triangleMassCenter(bottom[0], bottom[1], head[0]);
+            var FirstPyramidMassCenter = intersection(BottomMassCenter, head[0], secondTriangleMassCenter, bottom[3]);
+
+            //----------------------------------SecondPyramidMassCenter---------------------------------------------
+            var triangleFirstMassCenter1 = triangleMassCenter(bottom[2], bottom[3], head[1]);
+            var triangleFirstMassCenter2 = triangleMassCenter(bottom[2], bottom[3], head[0]);
+            var SecondPyramidMassCenter = intersection(triangleFirstMassCenter1, head[0], triangleFirstMassCenter2, head[1]);
+
+            //------------------------------------------RETURN------------------------------------------------------
+            massCenterCheck(FirstPyramidMassCenter, bottom, head);
+
+            massCenterCheck(SecondPyramidMassCenter, bottom, head);
+            return {
+                FirstPyramidMassCenter: FirstPyramidMassCenter,
+                SecondPyramidMassCenter: SecondPyramidMassCenter
+            }
+        case bottomType === 'triangle1' && headType === 'point':
+            var secondTriangleMassCenter = triangleMassCenter(bottom[0], bottom[1], head[0]);
+            massCenterCheck(intersection(BottomMassCenter, head[0], secondTriangleMassCenter, bottom[3]), bottom, head);
+            return {
+                massCenter: intersection(BottomMassCenter, head[0], secondTriangleMassCenter, bottom[3])
+            }
+        case bottomType === 'triangle2' && headType === 'line':
+
+            //----------------------------------FirstPyramidMassCenter---------------------------------------------
+            var secondTriangleMassCenter = triangleMassCenter(bottom[0], bottom[1], head[0]);
+            var FirstPyramidMassCenter = intersection(BottomMassCenter, head[0], secondTriangleMassCenter, bottom[2]);
+
+            //----------------------------------SecondPyramidMassCenter---------------------------------------------
+            var triangleFirstMassCenter1 = triangleMassCenter(bottom[2], bottom[3], head[1]);
+            var triangleFirstMassCenter2 = triangleMassCenter(bottom[2], bottom[3], head[0]);
+            var SecondPyramidMassCenter = intersection(triangleFirstMassCenter1, head[0], triangleFirstMassCenter2, head[1]);
+
+            //------------------------------------------RETURN------------------------------------------------------
+            massCenterCheck(FirstPyramidMassCenter, bottom, head);
+
+            massCenterCheck(SecondPyramidMassCenter, bottom, head);
+
+            return {
+                FirstPyramidMassCenter: FirstPyramidMassCenter,
+                SecondPyramidMassCenter: SecondPyramidMassCenter
+            }
+        case bottomType === 'triangle2' && headType === 'point':
+            var secondTriangleMassCenter = triangleMassCenter(bottom[0], bottom[1], head[0]);
+            massCenterCheck(intersection(BottomMassCenter, head[0], secondTriangleMassCenter, bottom[2]), bottom, head);
+            return {
+                massCenter: intersection(BottomMassCenter, head[0], secondTriangleMassCenter, bottom[2])
+            }
+        case bottomType === 'line' && headType === 'line':
+            var firstTriangleMassCenter = triangleMassCenter(bottom[2], bottom[3], head[0]);
+            var secondTriangleMassCenter = triangleMassCenter(bottom[2], bottom[3], head[1]);
+
+            var massCenter = intersection(firstTriangleMassCenter, head[1], secondTriangleMassCenter, head[0]);
+            massCenterCheck(massCenter, bottom, head);
+            return {
+                massCenter: massCenter
+            }
+        case bottomType === 'line' && headType === 'point':
+            massCenterCheck(triangleMassCenter(bottom[0], bottom[1], head[0]), bottom, head);
+            return {
+                massCenter: triangleMassCenter(bottom[0], bottom[1], head[0])
+            }
+        case bottomType === 'point' && headType === 'line':
+            massCenterCheck(triangleMassCenter(BottomMassCenter, head[0], head[1]), bottom, head);
+            return {
+                massCenter: triangleMassCenter(BottomMassCenter, head[0], head[1])
+            }
+        case bottomType === 'point' && headType === 'point':
+            massCenterCheck(vertexCenter(BottomMassCenter, head[0]), bottom, head);
+            return {
+                massCenter: vertexCenter(BottomMassCenter, head[0])
+            }
+
+        default:
+            console.log('bottom', bottom);
+            console.log('head', head);
+            console.log('bottomType', bottomType);
+            console.log('headType', headType);
+            throw new Error('Mass Center Dosen\'t identify!');
+
+
+
+
+    }
 }
+
+
+function massCenterCheck(massCenter, bottom, head) {
+    if (parseInt(massCenter.x) > parseInt(_.maxBy(bottom, 'x').x) || parseInt(massCenter.x) < parseInt(_.minBy(bottom, 'x').x)) {
+        console.log('bottom', bottom);
+        console.log('head', head);
+        // console.log('bottomType', bottomType);
+        // console.log('headType', headType);
+        throw new Error('GOVNO!')
+    }
+}
+
+function inDivide(a, b, head, bottom) {
+    var headPerBottom = floatMath().divide(head, bottom);
+
+    var x = floatMath().divide(
+        floatMath().add(
+            a.x,
+            floatMath().multiply(
+                headPerBottom,
+                b.x
+            )
+        ),
+        floatMath().add(
+            1,
+            headPerBottom
+        )
+    );
+    var y = floatMath().divide(
+        floatMath().add(
+            a.y,
+            floatMath().multiply(
+                headPerBottom,
+                b.y
+            )
+        ),
+        floatMath().add(
+            1,
+            headPerBottom
+        )
+    );
+    var z = floatMath().divide(
+        floatMath().add(
+            a.z,
+            floatMath().multiply(
+                headPerBottom,
+                b.z
+            )
+        ),
+        floatMath().add(
+            1,
+            headPerBottom
+        )
+    );
+    return new THREE.Vector3(x, y, z);
+};
+
+
+
+
+
 /**
  * 
  * @param {array} plane 
@@ -174,9 +371,9 @@ function intersectionPlaneLine(plane, line, debug) {
     var tC_z = floatMath().multiply(C, floatMath().subtract(l2.z, l1.z));
 
     var divideT = floatMath().add(tC_z, floatMath().subtract(tA_x, tB_y));
-    if (divideT === 0 || isNaN(divideT)) {
-        divideT = 0.000001;
-    }
+    // if (divideT === 0 || isNaN(divideT)) {
+    //     divideT = 0.000001;
+    // }
 
     var A_x = floatMath().multiply(A, floatMath().subtract(l1.x, p1.x));
     var B_y = floatMath().multiply(B, floatMath().subtract(l1.y, p1.y));
@@ -198,7 +395,8 @@ function intersectionPlaneLine(plane, line, debug) {
         return new THREE.Vector3(x, y, z);
     } else {
 
-
+        console.log('plane', plane);
+        console.log('line', line);
         throw new Error('No intersection LinePlane');
         //return new THREE.Vector3();
     }
@@ -380,30 +578,57 @@ function trapezeMassCenter(bottom, head) {
     if (head[0].x === head[1].x && head[0].y === head[1].y && head[0].z === head[1].z) {
         return triangleMassCenter(head[0], bottom[0], bottom[1]);
     }
+    var maxOsnovanie = distanceVector(bottom[0], bottom[1]);
+    var minOsnovanie = distanceVector(head[0], head[1]);
 
+    if (distanceVector(bottom[0], bottom[1]) < distanceVector(head[0], head[1])) {
+        var m = JSON.parse(JSON.stringify(head));
+        var r = JSON.parse(JSON.stringify(bottom));
 
-    if (bottom[0].x < head[0].x) {
-
-        var m = _.cloneDeep(head);
-        var r = _.cloneDeep(bottom);
         bottom = m;
         head = r;
+
+        var p = maxOsnovanie;
+        maxOsnovanie = minOsnovanie;
+        minOsnovanie = maxOsnovanie;
     }
+
+    // if (bottom[0].x < head[0].x) {
+
+    //     var m = _.cloneDeep(head);
+    //     var r = _.cloneDeep(bottom);
+    //     bottom = m;
+    //     head = r;
+    // }
 
     // get centers of bottom and head of trapeze
 
     var bottomCenter = vertexCenter(bottom[0], bottom[1]);
     var headCenter = vertexCenter(head[0], head[1]);
 
-    var doubleHead = new THREE.Vector3(floatMath().add(bottom[0].x, head[0].x), head[0].y, head[0].z);
+    var trapezeH = distanceVector(head[1], bottom[1]);
+
+    var Rac = (trapezeH / 3) * ((2 * maxOsnovanie + minOsnovanie) / (minOsnovanie + maxOsnovanie));
 
 
-    var doubleBottom = new THREE.Vector3(floatMath().subtract(0, bottom[0].x), bottom[0].y, bottom[0].z);
+    var Rab = distanceVector(bottomCenter, headCenter);
+    var k = Rac / Rab
+    var Xc = bottomCenter.x + (headCenter.x - bottomCenter.x) * k
+    var Yc = bottomCenter.y + (headCenter.y - bottomCenter.y) * k
+    var Zc = bottomCenter.z + (headCenter.z - bottomCenter.z) * k
 
 
-    var massCenter = intersection(headCenter, bottomCenter, doubleBottom, doubleHead);
 
-    return massCenter;
+
+    // var doubleHead = new THREE.Vector3(floatMath().add(bottom[0].x, head[0].x), head[0].y, head[0].z);
+
+
+    // var doubleBottom = new THREE.Vector3(floatMath().subtract(0, bottom[0].x), bottom[0].y, bottom[0].z);
+
+
+    // var massCenter = intersection(headCenter, bottomCenter, doubleBottom, doubleHead);
+
+    return new THREE.Vector3(Xc, Yc, Zc);
 }
 
 function triangleMassCenter(pointA, pointB, pointC) {
@@ -639,7 +864,7 @@ function floatMath() {
      * @param {*} b 
      */
     function subtract(a, b) {
-        return MathJS.round(Math.round((a - b) * 1e12) / 1e12, 5);
+        return MathJS.round(Math.round((a - b) * 1e12) / 1e12, 15);
 
     }
 
@@ -649,7 +874,7 @@ function floatMath() {
      * @param {*} b 
      */
     function add(a, b) {
-        return MathJS.round(Math.round((a + b) * 1e12) / 1e12, 5);
+        return MathJS.round(Math.round((a + b) * 1e12) / 1e12, 15);
     }
 
     /**
@@ -658,7 +883,7 @@ function floatMath() {
      * @param {*} b 
      */
     function multiply(a, b) {
-        return MathJS.round(Math.round((a * b) * 1e12) / 1e12, 5);
+        return MathJS.round(Math.round((a * b) * 1e12) / 1e12, 15);
     }
 
     /**
@@ -667,7 +892,7 @@ function floatMath() {
      * @param {*} b 
      */
     function divide(a, b) {
-        return MathJS.round(Math.round((a / b) * 1e12) / 1e12, 5);
+        return MathJS.round(Math.round((a / b) * 1e12) / 1e12, 15);
     }
 
     return {
@@ -677,6 +902,10 @@ function floatMath() {
         add: add
     }
 }
+function getRad(deg) {
+    var rad = deg * Math.PI / 180;
+    return rad;
+}
 
 
 exports.ShapeMath = {
@@ -685,11 +914,13 @@ exports.ShapeMath = {
     returnYbyLine: returnYbyLine,
     intersectionPlaneLine: intersectionPlaneLine,
     trapezeMassCenter: trapezeMassCenter,
+    triangleMassCenter: triangleMassCenter,
     vertexCenter: vertexCenter,
     proectionOnShapng: proectionOnShapng,
     getProectionOnLine: getProectionOnLine,
     distanceVector: distanceVector,
     proectionX: proectionX,
+    getRad: getRad,
     Squeare: {
         Triangle: triangleSqueare,
         Trapeze: trapezeSqueare,
