@@ -20,24 +20,81 @@ function Stabilized(paramsObject) {
             reject('No step for Stabilized');
         }
         var PromisesArray = [];
-        for (var i = paramsObject.step; i < 4.5; i = ShapeMath.FloatMath().add(i, paramsObject.step)) {
-            PromisesArray.push(Volume.build(
-                Object.assign({},
-                    {
-                        UpDown: false,
-                        filter: i
-                    },
-                    paramsObject)
-            ));
+        for (var i = 0; i < 10; i = i + 0.1) {
+            PromisesArray.push(
+                Volume
+                    .build(
+                    Object.assign({},
+                        {
+                            UpDown: false,
+                            filter: i
+                        },
+                        paramsObject)
+                    ));
         }
         return Promise
             .all(PromisesArray)
             .then(function (result) {
-                var minFilter = _.minBy(result, function (res) {
+
+                var minFilter = _.minBy(result, (res) => {
                     return MathJS.abs(res.Volume - paramsObject.searchVolume);
                 });
+                return minFilter.h;
 
-                return resolve(minFilter);
+            })
+            .then((h) => {
+                paramsObject.step = 0.1;
+                var findedEtta = 100;
+                var etta = 0.01;
+                var ResultObject = {};
+                var interation = 0;
+                var start = h;
+                var resultArray = []
+                var iteration = 0;
+                var count = 0;
+                return new Promise((resolve2, reject2) => {
+                    async.whilst(
+                        () => { return etta < findedEtta && iteration < 200; },
+                        (whilstCallback) => {
+
+                            start = start + paramsObject.step;
+                            return Volume
+                                .build(
+                                Object.assign({},
+                                    {
+                                        UpDown: false,
+                                        filter: start
+                                    },
+                                    paramsObject)
+                                )
+                                .then((result) => {
+                                    var thisEtta = MathJS.abs(result.Volume - paramsObject.searchVolume);
+                                    if (thisEtta > findedEtta) {
+                                        paramsObject.step = - paramsObject.step / 3;
+                                    }
+
+                                    findedEtta = thisEtta;
+                                    iteration++;
+                                    ResultObject = result;
+                                    return whilstCallback();
+
+                                })
+                                .catch((err) => {
+                                    return whilstCallback(err);
+                                });
+                        },
+                        (err, n) => {
+                            if (err) {
+                                reject2(err);
+                            } else {
+                                resolve2(ResultObject);
+                            }
+                        }
+                    );
+                });
+            })
+            .then((result) => {
+                return resolve(result);
             })
             .catch((err) => {
                 reject(err);
@@ -45,8 +102,8 @@ function Stabilized(paramsObject) {
 
 
 
-    });
 
+    });
 
 }
 
@@ -62,65 +119,118 @@ function StabilizedByDifferent(paramsObject) {
         if (!paramsObject.etta || !paramsObject.searchMassCenter) {
             reject('No etta or searchMassCenter  for Stabilized');
         }
-        paramsObject.step = 0.1;
-        var findedEtta = 100;
-        var ResultObject = {};
-        var interation = 0;
-        var start = -1;
-        var resultArray = []
-        var iteration = 0;
-        var count = 0;
-
-        async.whilst(
-            () => { return paramsObject.etta < findedEtta && iteration < 50; },
-            (whilstCallback) => {
 
 
-                start = start + paramsObject.step;
-
-                return ModelBuilder
-                    .build(Object.assign({},
-                        paramsObject, {
+        var PromisesArray = [];
+        for (var i = -30; i < 30; i++) {
+            PromisesArray.push(
+                ModelBuilder
+                    .build(
+                    Object.assign(
+                        {},
+                        paramsObject,
+                        {
                             initialPlusX: paramsObject.initialPlusX,
                             UpDown: false,
-                            different: start,
+                            different: i,
                             createShape: false,
                             mirrored: false,
-                        }))
-                    .then((result) => {
-
-                        var thisEtta = getEtta(result, paramsObject);
-                        if (thisEtta > findedEtta) {
-                            paramsObject.step = - paramsObject.step / 3;
                         }
-                        resultArray.push({
-                            iteration: iteration,
-                            different: result.different,
-                            etta: thisEtta,
-                            step: paramsObject.step,
-                            start: start
-                        });
-                        findedEtta = thisEtta;
-                        iteration++;
-                        ResultObject = result;
-                        return whilstCallback();
+                    ))
+            );
+        }
+        return Promise
+            .all(PromisesArray)
+            .then(function (result) {
 
-                    }).catch((err) => {
-                        return whilstCallback(err);
-                    });
-            },
-            (err, n) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    // resolve({
-                    //     resultArray: resultArray
-                    // });
-                    ResultObject.resultArray = resultArray;
-                    resolve(ResultObject);
-                }
-            }
-        );
+                var min = _.minBy(result, (res) => {
+                    return getEtta(res, paramsObject);
+                });
+                return min.different;
+
+            })
+            .then((different) => {
+                paramsObject.step = 1;
+                var findedEtta = 100;
+                var ResultObject = {};
+                var interation = 0;
+                var start = different;
+                var resultArray = []
+                var iteration = 0;
+                var count = 0;
+                return new Promise((resolve2, reject2) => {
+
+                    async.whilst(
+                        () => { return paramsObject.etta < findedEtta && iteration < 100; },
+                        (whilstCallback) => {
+
+
+                            start = start + paramsObject.step;
+
+                            return ModelBuilder
+                                .build(Object.assign({},
+                                    paramsObject, {
+                                        initialPlusX: paramsObject.initialPlusX,
+                                        UpDown: false,
+                                        different: start,
+                                        createShape: false,
+                                        mirrored: false,
+                                    }))
+                                .then((result) => {
+
+                                    var thisEtta = getEtta(result, paramsObject);
+                                    if (thisEtta > findedEtta) {
+                                        paramsObject.step = - paramsObject.step / 3;
+                                    }
+                                    resultArray.push({
+                                        iteration: iteration,
+                                        different: result.different,
+                                        etta: thisEtta,
+                                        step: paramsObject.step,
+                                        start: start
+                                    });
+
+                                    findedEtta = thisEtta;
+                                    iteration++;
+                                    ResultObject = result;
+                                    return whilstCallback();
+
+                                }).catch((err) => {
+                                    return whilstCallback(err);
+                                });
+                        },
+                        (err, n) => {
+                            if (err) {
+                                reject2(err);
+                            } else {
+                                // resolve({
+                                //     resultArray: resultArray
+                                // });
+                                ResultObject.resultArray = resultArray;
+                                resolve2(ResultObject);
+                            }
+                        }
+                    );
+
+                });
+            })
+            .then((result) => {
+                resolve(result);
+            })
+            .catch((err) => {
+                reject(err);
+            })
+
+
+
+
+
+
+
+
+
+
+
 
     });
 }

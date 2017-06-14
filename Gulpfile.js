@@ -51,10 +51,9 @@ gulp.task('build', ['copy'], function () {
 
 
 gulp.task('run', function () {
-   
 
-   
-    childProcess.spawn(electron, ['./app'], { stdio: ['inherit'] });
+    console.log('Start Run')
+    childProcess.spawn(electron, [__dirname + '/app'], { stdio: ['inherit'] });
 });
 
 gulp.task('build-electron', function () {

@@ -1,28 +1,168 @@
-<md-content md-theme="docs-dark" layout-gt-sm="row" layout-padding>
-  <div>
-    <md-input-container>
-      <label>Title</label>
-      <input ng-model="user.title">
-    </md-input-container>
+<section layout="row" md-theme="docs-dark" flex>
+  <md-sidenav class="md-sidenav-left" md-component-id="left" md-disable-backdrop md-whiteframe="4" ng-init="toggleLeft()">
+    <md-toolbar class="md-theme-indigo">
+      <h1 class="md-toolbar-tools">Disabled Backdrop</h1>
+    </md-toolbar>
+    <md-content layout-margin>
 
-    <md-input-container>
-      <label>Email</label>
-      <input ng-model="user.email" type="email">
-    </md-input-container>
+      <h3>
+        3D Window Size
+      </h3>
+      <md-slider-container>
+        <span>Width</span>
+        <md-slider flex min="0" max="1920" ng-change="setWidth()" ng-model="modelSize.width" aria-label="red" id="red-slider">
+        </md-slider>
+        <md-input-container>
+          <input flex type="number" ng-model="modelSize.width" aria-label="red" aria-controls="red-slider">
+        </md-input-container>
+      </md-slider-container>
+      <md-slider-container>
+        <span>Height</span>
+        <md-slider flex ng-model="modelSize.height" ng-change="setWidth()" min="0" max="1080" aria-label="green" id="green-slider"
+          class="md-accent">
+        </md-slider>
+        <md-input-container>
+          <input flex type="number" ng-model="modelSize.height" aria-label="green" aria-controls="green-slider">
+        </md-input-container>
+      </md-slider-container>
+      <md-button ng-click="setWidth()" class="md-accent">
+        Set </md-button>
 
 
-    <md-input-container>
+      <md-button ng-click="toggleLeft()" class="md-accent">
+        << Close this Sidenav </md-button>
+    </md-content>
+  </md-sidenav>
+</section>
+
+<div layout-gt-md="column" class="height100">
+
+  <md-content md-theme="docs-dark" layout-gt-md="row" layout-padding>
+
+    <h3> {{Ship.name}}</h3>
+    <!--<md-input-container>
       <md-button class="md-primary md-raised" ng-click="show()">
         Alert Dialog
+      </md-button>
     </md-input-container>
+    <md-input-container>
+      <md-button ng-click="toggleLeft()" class="md-raised">
+        Toggle Sidenav
+      </md-button>
+    </md-input-container>-->
 
+  </md-content>
+
+  <div layout-gt-sm="row">
+    <md-content md-theme="docs-dark" flex-gt-xs="column" layout-padding>
+
+      <span us-spinner="{radius:30, width:8, length: 16}" spinner-key="spinner-1"></span>
+      <!--<md-input-container>
+        <md-button class="md-primary md-raised" ng-click="startSpin()">
+          Start spinner
+        </md-button>
+      </md-input-container>
+      <md-input-container>
+        <md-button class="md-primary md-raised" ng-click="stopSpin()">
+          Stop spinner
+        </md-button>
+      </md-input-container>-->
+
+      <div layout-gt-sm="row">
+        <md-input-container class="md-block" flex-gt-sm>
+          <label>Filter</label>
+          <input ng-model="finded_filter.h">
+        </md-input-container>
+
+        <md-input-container class="md-block" flex-gt-sm>
+          <label>Different</label>
+          <input ng-model="finded_different.different">
+        </md-input-container>
+        <md-input-container class="md-block" flex-gt-sm>
+          <label>InitialPlusX</label>
+          <input ng-model="initialPlusX.x">
+        </md-input-container>
+      </div>
+      <md-input-container>
+        <md-button class="md-primary md-raised" ng-click="show()">
+          Alert Dialog
+        </md-button>
+      </md-input-container>
+      <md-input-container>
+        <md-button ng-click="load()" class="md-primary md-raised" ng-click="show()">
+          Load Ship
+        </md-button>
+      </md-input-container>
+      <md-input-container>
+        <md-button ng-click="stabilazed()" class="md-primary md-raised" ng-click="show()">
+          Stabilazed By Filter
+        </md-button>
+      </md-input-container>
+      <md-input-container>
+        <md-button ng-click="stabilazedDifferent()" class="md-primary md-raised" ng-click="show()">
+          Stabilazed By Different
+        </md-button>
+      </md-input-container>
+      <md-input-container>
+        <md-button ng-click="build()" class="md-primary md-raised" ng-click="show()">
+          Build
+        </md-button>
+      </md-input-container>
+      <md-input-container>
+        <md-button ng-click="toggleLeft()" class="md-raised">
+          Toggle Sidenav
+        </md-button>
+      </md-input-container>
+      <md-input-container>
+        <md-button ng-click="cleareScene()" class="md-raised">
+          Cleare Scene
+        </md-button>
+      </md-input-container>
+
+    </md-content>
 
   </div>
-  </div>
-</md-content>
+  <md-content md-theme="docs-dark" flex layout-padding class="height100">
+    <!--Table Area -->
+    <div layout-gt-sm="row">
+      <md-content md-theme="docs-dark" flex-gt-md="column" layout-padding>
+        <table ng-table="tableParams" class="table" show-filter="true">
+          <tr ng-repeat="user in $data">
+            <td title="'Title'" filter="{ title: 'text'}" sortable="'title'">
+              {{user.title}}
+            </td>
+            <td title="'Measure of measurement'" filter="{ measurement: 'text'}" sortable="'measurement'">
+              {{user.measurement}}</td>
+            <td title="'Param Name'" filter="{ name: 'text'}" sortable="'name'">
+              {{user.paramName}}
+            </td>
+            <td title="'Value'" filter="{ value: 'number'}" sortable="'value'">
+              {{user.value}}
+            </td>
 
-<md-content layout-padding md-theme="docs-dark">
-  <div id="model" style="background-color: black">
+          </tr>
+        </table>
+      </md-content>
+    </div>
 
+
+    <!--Model Area-->
+    <div layout-gt-sm="row">
+      <md-content md-theme="docs-dark" flex-gt-md="column" layout-padding>
+
+        <md-content class="model">
+          <div flex id="model" class="model">
+          </div>
+        </md-content>
+
+
+      </md-content>
+    </div>
+  </md-content>
 </div>
-</md-content>
+
+
+
+
+<!--<div layout-gt-md="row" id="model">
+</div>-->

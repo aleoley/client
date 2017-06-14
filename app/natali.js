@@ -1,6 +1,6 @@
 var natali = {
     name: 'Natali',
-    Weight: 2513.73,
+    Weight: 2513.42,
     Length:74.80,
     base: [
         {

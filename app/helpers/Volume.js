@@ -6,60 +6,6 @@ var ShapeMath = require('./shapeMath').ShapeMath;
 'use strict';
 
 
-function getVolume(bottom, head, paramsObject) {
-
-    //botom must have lenght=2
-    if (bottom.length !== 2) {
-        return;
-    }
-
-    //head must have lenght=1 
-    if (head.length !== 1) {
-        return;
-    }
-
-    // build proections
-    bottom.push(ShapeMath.proectionX(bottom[0]));
-    bottom.push(ShapeMath.proectionX(bottom[1]));
-    head.push(ShapeMath.proectionX(head[0]));
-
-    // h must be fixed by default
-    var vectorAH = new THREE.Vector3(0, 0, bottom[0].z);
-    var vectorBH = new THREE.Vector3(0, 0, head[0].z);
-    var fixedH = ShapeMath.distanceVector(vectorAH, vectorBH);
-
-    var buttomA = ShapeMath.distanceVector(bottom[0], bottom[2]);
-    var buttomB = ShapeMath.distanceVector(bottom[1], bottom[3]);
-    var buttomC = ShapeMath.distanceVector(bottom[0], bottom[1]);
-    var buttomD = ShapeMath.distanceVector(bottom[2], bottom[3]);
-
-    //======================= get Mass Center 
-    // var massCenter = ShapeMath.getMassCenter(bottom, head);
-    // console.log('massCenter', massCenter);
-    // addPoint(massCenter.FirstPyramidMassCenter, paramsObject);
-    // addPoint(massCenter.SecondPyramidMassCenter, paramsObject);
-
-    var triangleA = ShapeMath.distanceVector(bottom[2], bottom[3]);
-    var triangleB = ShapeMath.distanceVector(head[1], bottom[3]);
-    var triangleC = ShapeMath.distanceVector(bottom[2], head[1]);
-
-
-    var trapezeSqueareV1 = ShapeMath.Squeare.Trapeze(buttomA, buttomB, buttomC, buttomD);
-    var triangleSqueareV2 = ShapeMath.Squeare.Triangle(triangleA, triangleB, triangleC)
-
-    var pyramid2H = ShapeMath.distanceVector(head[0], head[1]);
-
-    var V1 = ShapeMath.Volume.Pyramid(trapezeSqueareV1, fixedH);
-    var V2 = ShapeMath.Volume.Pyramid(triangleSqueareV2, pyramid2H);
-
-    return {
-        TrapezePyramidVolume: V1,
-        TrianglePyramidVolume: V2,
-        sum: V1 + V2
-    };
-}
-
-
 function BuildVolume(paramsObject) {
     return new Promise(function (resolve, reject) {
         var initialTimeout = paramsObject.initialTimeout;
@@ -114,8 +60,8 @@ function BuildVolume(paramsObject) {
 
                     var head = [minDisArray[0]];
 
-                    var volume = getVolume(bottom, head, paramsObject);
-                    middleVolume += volume.TrapezePyramidVolume + volume.TrianglePyramidVolume;
+                    var volume = ShapeMath.Volume.getVolume(bottom, head, paramsObject);
+                    middleVolume += volume.sum;
 
 
 
@@ -146,8 +92,8 @@ function BuildVolume(paramsObject) {
                             }
                         }
 
-                        var volume2 = getVolume(bottom2, head2, paramsObject);
-                        middleVolume += volume2.TrapezePyramidVolume + volume2.TrianglePyramidVolume;;
+                        var volume2 = ShapeMath.Volume.getVolume(bottom2, head2, paramsObject);
+                        middleVolume += volume2.sum;
 
                         asyncJ++;
                         eachCallback2();
@@ -201,9 +147,8 @@ function BuildVolume(paramsObject) {
 
 
 
-                    var volume = getVolume(bottom, head, paramsObject);
-                    middleVolume += volume.TrapezePyramidVolume + volume.TrianglePyramidVolume;;
-
+                    var volume = ShapeMath.Volume.getVolume(bottom, head, paramsObject);
+                    middleVolume += volume.sum;
 
 
 
@@ -243,8 +188,8 @@ function BuildVolume(paramsObject) {
 
                         }
 
-                        var volume2 = getVolume(bottom2, head2, paramsObject);
-                        middleVolume += volume2.TrapezePyramidVolume + volume2.TrianglePyramidVolume;
+                        var volume2 = ShapeMath.Volume.getVolume(bottom2, head2, paramsObject);
+                        middleVolume += volume2.sum;
 
                         asyncJ++;
                         eachCallback2();
@@ -286,7 +231,7 @@ function build(paramsObject) {
             return _.sortBy(shpang, 'y');
         });
 
-         var shpangsForWork = JSON.parse(JSON.stringify(paramsObject.Ship.shpangs));
+        var shpangsForWork = JSON.parse(JSON.stringify(paramsObject.Ship.shpangs));
         console.log('Volume', paramsObject);
         //if different we must find mass center of all squeare by filter
         var defaultPoint = new THREE.Vector3(0, 0, 0);
@@ -366,7 +311,7 @@ function build(paramsObject) {
             var RealMassCenter_Z = (RealMassCenter_L_Z * FilteredPlaneSquere + RealMassCenter_R_Z * FilteredPlaneSquere) / (FilteredPlaneSquere * 2);
 
             var massCenter = new THREE.Vector3(RealMassCenter_X, RealMassCenter_Y, RealMassCenter_Z);
-            addPoint(massCenter, paramsObject);
+            // addPoint(massCenter, paramsObject);
 
             // RESULT!!!!!!!!!!!!!!!!!!!!!!
             defaultPoint = massCenter
@@ -525,4 +470,3 @@ function build(paramsObject) {
 }
 
 exports.build = build;
-exports.getVolume = getVolume;

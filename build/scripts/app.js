@@ -1,6 +1,6 @@
 var path = require('path');
 
-const Languages  = require ('./assets/languages/index');
+const Languages = require('./assets/languages/index');
 
 
 'use strict';
@@ -15,7 +15,8 @@ angular.module('app', [
     'ui.router',
     'mdPickers',
     'angularFileUpload',
-    'ngTable'
+    'ngTable',
+    'angularSpinner'
 
 ])
     .run(function ($rootScope) {
@@ -34,12 +35,12 @@ angular.module('app', [
         function getLanguage(language) {
             return Languages.English;
         }
-        
+
 
         getLanguage();
         $rootScope.Setlanguage = setLanguage;
         $rootScope.getLanguage = getLanguage;
-       
+
     })
     .config(['$routeProvider', function ($routeProvider) {
         // $routeProvider.when('/', {
@@ -54,17 +55,27 @@ angular.module('app', [
 
         // Configure a dark theme with primary foreground yellow
 
-        $mdThemingProvider.theme('docs-dark', 'default')
+        $mdThemingProvider
+            .theme('docs-dark', 'default')
             .primaryPalette('blue')
             .accentPalette('blue')
             //.backgroundPalette('pink')
             .dark();
 
-        $mdThemingProvider.theme('docs-light', 'default')
-            .primaryPalette('blue');
+        $mdThemingProvider
+            .theme('docs-light')
+            .backgroundPalette('blue')
+            .primaryPalette('red')
+            .accentPalette('red')
 
 
-    });
+
+
+
+    }).config(['usSpinnerConfigProvider', function (usSpinnerConfigProvider) {
+        usSpinnerConfigProvider.setTheme('bigBlue', { color: 'blue', radius: 20 });
+        usSpinnerConfigProvider.setTheme('smallRed', { color: 'red', radius: 6 });
+    }]);
 
 angular
   .module('app')
@@ -104,97 +115,132 @@ angular
     $urlRouterProvider.otherwise('/');
   });
 
+const { ipcRenderer } = require('electron');
+
+const stabilityList = require('./assets/baseStructures/stabilityList').StabilitiList;
+
 (function () {
     'use strict';
-    var mysql = require('mysql');
-    
-    // Creates MySql database connection
-    var connection = mysql.createConnection({
-        host: "localhost",
-        user: "root",
-        password: "password",
-        database: "customer_manager"
-    });
-    
+
     angular.module('app')
-        .service('customerService', ['$q', CustomerService]);
-    
-    function CustomerService($q) {
+        .service('ModelService', ['$q', '$mdToast', ModelService]);
+
+    function ModelService($q, $mdToast) {
+
+        const Ship = {
+            Load: (ship) => {
+                return $q((resolve, reject) => {
+
+                    ipcRenderer.on('error-reply', (event, err) => {
+                        showAlert(err);
+                        reject(err);
+                    });
+
+                    ipcRenderer.on('load_ship-reply', (event, responce) => {
+                        resolve(responce);
+                    });
+
+                    ipcRenderer.send('load_ship', ship);
+                });
+            },
+            Stabilazed: (params) => {
+                return $q((resolve, reject) => {
+
+                    ipcRenderer.on('error-reply', (event, err) => {
+                        showAlert(err);
+                        reject(err);
+                    });
+
+                    ipcRenderer.on('stabilazed_volume-reply', (event, responce) => {
+                        resolve(responce);
+                    });
+
+                    ipcRenderer.send('stabilazed_volume', params);
+                });
+            },
+            StabilazedDifferent: (params) => {
+                return $q((resolve, reject) => {
+
+                    ipcRenderer.on('error-reply', (event, err) => {
+                        showAlert(err);
+                        reject(err);
+                    });
+
+                    ipcRenderer.on('stabilazed_different-reply', (event, responce) => {
+                        resolve(responce);
+                    });
+
+                    ipcRenderer.send('stabilazed_different', params);
+                });
+            },
+
+        };
+        const Model = {
+            Build: (params) => {
+                return $q((resolve, reject) => {
+
+                    ipcRenderer.on('error-reply', (event, err) => {
+                        console.log('err!!!!11', err);
+                        showAlert(err);
+                        reject(err);
+                    });
+
+                    ipcRenderer.on('build_model-reply', (event, responce) => {
+                        resolve(responce);
+                    });
+
+                    ipcRenderer.send('build_model', params);
+                });
+            },
+        }
+
+        const DataSet = {
+            Build: (inputObject) => {
+
+                var outArray = _.compact(_.map(stabilityList, (item) => {
+                    var getter = _.get(inputObject, item.systemName);
+                    if (getter || getter === 0) {
+                        item.value = _.get(inputObject, item.systemName);
+                        return item;
+                    } else {
+                        return false;
+                    }
+                }));
+                return outArray;
+            },
+        }
+
+
+        const showAlert = (text) => {
+            let toast = $mdToast.simple()
+
+                .textContent('Error: ' + text)
+                .action('UNDO')
+                .highlightAction(true)
+                .highlightClass('md-primary')
+                .toastClass('md-primary')
+                .theme('docs-light')
+                // Accent is used by default, this just demonstrates the usage.
+                .position('top right');
+
+            $mdToast
+                .show(toast)
+                .then((response) => {
+                    if (response == 'ok') {
+                        console.log('You clicked the \'UNDO\' action.');
+                    }
+                });
+        }
+
+
+
 
         return {
-            getCustomers: getCustomers,
-            getById: getCustomerById,
-            getByName: getCustomerByName,
-            create: createCustomer,
-            destroy: deleteCustomer,
-            update: updateCustomer
+            Ship: Ship,
+            Model: Model,
+            DataSet: DataSet
+
         };
-
-
-        function getCustomers() {
-            var deferred = $q.defer();
-            var query = "SELECT * FROM customers";
-            connection.query(query, function (err, rows) {
-                if (err) deferred.reject(err);
-                deferred.resolve(rows);
-            });
-            return deferred.promise;
-        }
-        
-        function getCustomerById(id) {
-            var deferred = $q.defer();
-            var query = "SELECT * FROM customers WHERE customer_id = ?";
-            connection.query(query, [id], function (err, rows) {
-                if (err) deferred.reject(err);
-                deferred.resolve(rows);
-            });
-            return deferred.promise;
-        }
-        
-        function getCustomerByName(name) {
-            var deferred = $q.defer();
-            var query = "SELECT * FROM customers WHERE name LIKE  '" + name + "%'";
-            connection.query(query, [name], function (err, rows) {
-                console.log(err)
-                if (err) deferred.reject(err);
-                
-                deferred.resolve(rows);
-            });
-            return deferred.promise;
-        }
-        
-        function createCustomer(customer) {
-            var deferred = $q.defer();
-            var query = "INSERT INTO customers SET ?";
-            connection.query(query, customer, function (err, res) {
-                console.log(err)
-                if (err) deferred.reject(err);
-                console.log(res)
-                deferred.resolve(res.insertId);
-            });
-            return deferred.promise;
-        }
-        
-        function deleteCustomer(id) {
-            var deferred = $q.defer();
-            var query = "DELETE FROM customers WHERE customer_id = ?";
-            connection.query(query, [id], function (err, res) {
-                if (err) deferred.reject(err);
-                console.log(res);
-                deferred.resolve(res.affectedRows);
-            });
-            return deferred.promise;
-        }
-        
-        function updateCustomer(customer) {
-            var deferred = $q.defer();
-            var query = "UPDATE customers SET name = ? WHERE customer_id = ?";
-            connection.query(query, [customer.name, customer.customer_id], function (err, res) {
-                if (err) deferred.reject(err);
-                deferred.resolve(res);
-            });
-            return deferred.promise;
-        }
     }
 })();
 (function (global, factory) {
@@ -43538,156 +43584,260 @@ angular.module('app')
         }]);
 
 var THREE = require("three");
-var OrbitControls=require("./node_modules/three.js/examples/js/controls/OrbitControls.js");
+var OrbitControls = require("./node_modules/three.js/examples/js/controls/OrbitControls.js");
 require("./node_modules/three.js/examples/js/geometries/ConvexGeometry.js");
 var Detector = require("./node_modules/three.js/examples/js/Detector");
-require("./node_modules/three.js/examples/js/libs/stats.min.js");
+var Stats = require("./node_modules/three.js/examples/js/libs/stats.min.js");
 var shpangs = require('./sheapTest.js');
+var natali = require('./natali.js').natali;
+//var natali = require('./testShape.js').TestShape;
 
-
+var _ = require('lodash');
+var ModelBuilder = require('./helpers/modelBuilder');
+var ShapeMath = require('./helpers/shapeMath').ShapeMath;
+var async = require('async');
+const MathJS = require('mathjs');
 
 'use strict';
 
 angular.module('app')
-    .controller('modelController', ['$scope', 'customerService', '$q', '$mdDialog',
-        function modelController($scope, customerService, $q, $mdDialog) {
-            $scope.show = function () {
+    .controller('modelController', ['$scope', 'ModelService', '$q', '$mdDialog', '$mdToast', '$mdSidenav', 'NgTableParams', 'usSpinnerService',
+        function modelController($scope, ModelService, $q, $mdDialog, $mdToast, $mdSidenav, NgTableParams, usSpinnerService) {
 
+            //-----------------------------INITIAL DEFAAULT PARAMS------------------
+            var group, camera, scene, renderer;
+            $scope.tableParams = new NgTableParams({}, { dataset: [] });
+            $scope.toggleLeft = buildToggler('left');
+            $scope.toggleRight = buildToggler('right');
+            function buildToggler(componentId) {
+                return function () {
+                    setTimeout(function () { $mdSidenav(componentId).toggle(), 700 });
 
-
-                if (!Detector.webgl) Detector.addGetWebGLMessage();
-                var group, camera, scene, renderer;
-                init();
-                animate();
-
-                function assignUVs(geometry) {
-
-                    geometry.faceVertexUvs[0] = [];
-
-                    geometry.faces.forEach(function (face) {
-
-                        var components = ['x', 'y', 'z'].sort(function (a, b) {
-                            return Math.abs(face.normal[a]) > Math.abs(face.normal[b]);
-                        });
-
-                        var v1 = geometry.vertices[face.a];
-                        var v2 = geometry.vertices[face.b];
-                        var v3 = geometry.vertices[face.c];
-
-                        geometry.faceVertexUvs[0].push([
-                            new THREE.Vector2(v1[components[0]], v1[components[1]]),
-                            new THREE.Vector2(v2[components[0]], v2[components[1]]),
-                            new THREE.Vector2(v3[components[0]], v3[components[1]])
-                        ]);
-
-                    });
-
-                    geometry.uvsNeedUpdate = true;
                 }
-
-                function init() {
-                    scene = new THREE.Scene();
-                    console.log(scene);
-                    renderer = new THREE.WebGLRenderer({ antialias: true });
-                    renderer.setPixelRatio(window.devicePixelRatio);
-                    renderer.setSize(window.innerWidth, window.innerHeight);
-                    document.getElementById('model').appendChild(renderer.domElement);
-                    // camera
-                    camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 1, 1000);
-                    camera.position.set(15, 20, 30);
-                    scene.add(camera);
-                    // controls
-                    controls = new THREE.OrbitControls(camera, renderer.domElement);
-                    controls.minDistance = 20;
-                    controls.maxDistance = 250;
-                    controls.maxPolarAngle = Math.PI / 2;
-                    //scene.add(new THREE.AmbientLight(0x222222));
-                    // var light = new THREE.PointLight(0xffffff, 1);
-
-                    light = new THREE.PointLight();
-                    light.position.set(200, 100, 150);
-                    scene.add(light);
-                    camera.add(light);
-                    // scene.add(new THREE.AxisHelper(20));
-
-                    var gridHelper = new THREE.GridHelper(400, 40, 0x0000ff, 0x808080);
-                    gridHelper.position.y = 0;
-                    gridHelper.position.x = 0;
-                    scene.add(gridHelper);
-                    //
-                    var loader = new THREE.TextureLoader();
-                    var texture = loader.load('./node_modules/three.js/examples/textures/sprites/disc.png');
-                    group = new THREE.Group();
-                    scene.add(group);
-                    // points
-                    var pointsGeometry = new THREE.Geometry(10);
-                    pointsGeometry.vertices = [];
-                    for (var i = 0; i < shpangs.shpangs.length; i++) {
-                        for (var j = 0; j < shpangs.shpangs[i].length; j++) {
-                            pointsGeometry.vertices.push(new THREE.Vector3(-(shpangs.shpangs[i][j].x / 100), -(shpangs.shpangs[i][j].y / 100), -(shpangs.shpangs[i][j].z / 1.3)));
-                            //pointsGeometry.vertices.push(new THREE.Vector3((shpangs.shpangs[i][j].x / 100), -(shpangs.shpangs[i][j].y / 100), -(shpangs.shpangs[i][j].z / 1.3)));
-                        }
-                        for (var j = 0; j < shpangs.shpangs[i].length; j++) {
-                            //pointsGeometry.vertices.push(new THREE.Vector3(-(shpangs.shpangs[i][j].x / 100), -(shpangs.shpangs[i][j].y / 100), -(shpangs.shpangs[i][j].z / 1.3)));
-                           pointsGeometry.vertices.push(new THREE.Vector3((shpangs.shpangs[i][j].x / 100), -(shpangs.shpangs[i][j].y / 100), -(shpangs.shpangs[i][j].z / 1.3)));
-                        }
-
-                    }
-                    //assignUVs(pointsGeometry);
-
-                    console.log('pointsGeometry', pointsGeometry);
-                    // for (var i = 0; i < pointsGeometry.vertices.length; i++) {
-
-                    //     //pointsGeometry.vertices[ i ].add( randomPoint().multiplyScalar( 2 ) ); // wiggle the points
-                    // }
-                    var pointsMaterial = new THREE.PointsMaterial({
-                        color: 0x0080ff,
-                        map: texture,
-                        size: 4,
-                        alphaTest: 0.5
-                    });
-                    var points = new THREE.Points(pointsGeometry, pointsMaterial);
-                    group.add(points);
-                    // convex hull
-                    var meshMaterial = new THREE.MeshLambertMaterial({
-                        color: 0xffffff,
-                        opacity: 0.3,
-                        transparent: true
-                    });
-                    var meshGeometry = new THREE.Geometry(pointsGeometry.vertices);
-                    mesh = new THREE.Mesh(meshGeometry, meshMaterial);
-                    mesh.material.side = THREE.BackSide; // back faces
-                    mesh.renderOrder = 0;
-                    group.add(mesh);
-                    mesh = new THREE.Mesh(meshGeometry, meshMaterial.clone());
-                    mesh.material.side = THREE.FrontSide; // front faces
-                    mesh.renderOrder = 1;
-                    group.add(mesh);
-                    //
-
-                    console.log('meshGeometry', meshGeometry);
-                    window.addEventListener('resize', onWindowResize, false);
-                }
-                function randomPoint() {
-                    return new THREE.Vector3(THREE.Math.randFloat(- 1, 1), THREE.Math.randFloat(- 1, 1), THREE.Math.randFloat(- 1, 1));
-                }
-                function onWindowResize() {
-                    camera.aspect = window.innerWidth / window.innerHeight;
-                    camera.updateProjectionMatrix();
-                    renderer.setSize(window.innerWidth, window.innerHeight);
-                }
-                function animate() {
-                    requestAnimationFrame(animate);
-                    //group.rotation.y += 0.005;
-                    render();
-                }
-                function render() {
-                    renderer.render(scene, camera);
-                }
-
-
             }
+            $scope.modelSize = {
+                width: 1280,
+                height: 1024
+            }
+            $scope.model3d = false;
+            $scope.model2d = false;
+            $scope.finded_different = {
+                different: -1.8432098765432126
+            }
+            $scope.finded_filter = {
+                h: 3.3
+            }
+
+            $scope.initialPlusX = {
+                x: 0
+            };
+            $scope.ResultShipData = {};
+
+            $scope.setWidth = function () {
+                renderer.setSize($scope.modelSize.width, $scope.modelSize.height);
+            }
+            var loader = new THREE.TextureLoader();
+            var texture = loader.load('./assets/materials/round.png');
+
+
+            if (!Detector.webgl) Detector.addGetWebGLMessage();
+            var mouse = new THREE.Vector2(), INTERSECTED;
+            var radius = 100, theta = 0;
+            var raycaster = new THREE.Raycaster();
+            init();
+            animate();
+
+
+
+
+
+
+
+            function init() {
+                scene = new THREE.Scene();
+                scene.background = new THREE.Color('#303030');
+
+                renderer = new THREE.WebGLRenderer({ antialias: true });
+                renderer.setPixelRatio(window.devicePixelRatio);
+                renderer.setSize($scope.modelSize.width, $scope.modelSize.height);
+                document.getElementById('model').appendChild(renderer.domElement);
+                // camera
+                camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 1, 1000);
+                camera.position.set(55, 10, 100);
+                scene.add(camera);
+                // controls
+                controls = new THREE.OrbitControls(camera, renderer.domElement);
+                controls.minDistance = 20;
+                controls.maxDistance = 250;
+                controls.maxPolarAngle = Math.PI / 2;
+                scene.add(new THREE.AmbientLight(0x222222));
+                var light = new THREE.PointLight(0x0080ff, 1);
+
+                light = new THREE.PointLight();
+                light.position.set(200, 100, 150);
+                scene.add(light);
+                camera.add(light);
+                scene.add(new THREE.AxisHelper(200));
+
+                var gridHelper = new THREE.GridHelper(400, 40, 0x0000ff, 0x808080);
+                gridHelper.position.y = 0;
+                gridHelper.position.x = 0;
+                scene.add(gridHelper);
+                //
+
+                group = new THREE.Group();
+                scene.add(group);
+
+
+                window.addEventListener('resize', onWindowResize, false);
+            }
+
+            function onWindowResize() {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+
+                renderer.setSize($scope.modelSize.width, $scope.modelSize.height);
+            }
+
+
+
+            function animate() {
+                requestAnimationFrame(animate);
+                // //group.rotation.y += 0.005;
+                render();
+            }
+
+            function onDocumentMouseMove(event) {
+                event.preventDefault();
+                mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+                mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
+            }
+            //
+
+
+
+
+            function render() {
+
+                renderer.render(scene, camera);
+            }
+
+
+            $scope.Ship = {
+                name: 'TEST'
+            }
+
+            $scope.load = () => {
+                $scope.startSpin();
+                ModelService
+                    .Ship
+                    .Load(natali)
+                    .then((res) => {
+                        $scope.stopSpin();
+                        console.log('RES!!!!!!', res);
+                        $scope.Ship = res;
+                        console.log('$scope.Ship!!!!!!', $scope.Ship);
+                        return res;
+                    });
+            };
+
+            $scope.stabilazed = () => {
+                console.log('$scope.initialPlusX.x', $scope.initialPlusX.x);
+                $scope.startSpin();
+                ModelService
+                    .Ship
+                    .Stabilazed({
+                        initialPlusX: parseFloat($scope.initialPlusX.x),
+                        Ship: $scope.Ship,
+                        searchVolume: $scope.Ship.Weight / 1.025,
+                        step: 0.1,
+                        water: 1.025,
+                    })
+                    .then((res) => {
+
+                        $scope.stopSpin();
+                        console.log('STABILAZED', res);
+                        $scope.finded_filter = res;
+                    })
+            };
+
+            $scope.stabilazedDifferent = () => {
+                $scope.startSpin();
+                ModelService
+                    .Ship
+                    .StabilazedDifferent({
+                        initialPlusX: parseFloat($scope.initialPlusX.x),
+                        Ship: $scope.Ship,
+                        searchMassCenter: new THREE.Vector3(0, 4.81, -2.33),
+                        etta: 0.0001,
+                        filter: $scope.finded_filter.h,
+                        water: 1.025,
+                    })
+                    .then((res) => {
+                        $scope.stopSpin();
+                        console.log('STABILAZED', res);
+                        $scope.finded_different = res;
+                    });
+            };
+
+            $scope.build = () => {
+                $scope.startSpin();
+                ModelBuilder
+                    .build({
+                        initialPlusX: parseFloat($scope.initialPlusX.x),
+                        initialTimeout: 0,
+                        Ship: $scope.Ship,
+                        filter: $scope.finded_filter.h,
+                        different: $scope.finded_different.different,
+                        createShape: true,
+                        mirrored: true,
+                        // half: true,
+                        water: 1.025,
+                        texture: texture,
+                        UpDown: true,
+                        group: group
+                    })
+                    .then((res) => {
+                        $scope.stopSpin();
+                        $scope.ResultShipData = res[0];
+                        $scope.ResultShipData.Tm = res[0].filter;
+                        $scope.ResultShipData.ShipTonnVolume = $scope.Ship.Weight;
+                        $scope.ResultShipData.ShipVolume = $scope.Ship.Weight / 1.025;
+                        $scope.ResultShipData.ShipMassCenter = new THREE.Vector3(0, 4.81, -2.33);
+                        var dataSet = ModelService.DataSet.Build($scope.ResultShipData);
+                        console.log('dataSet', dataSet);
+                        $scope.tableParams = new NgTableParams({}, { dataset: dataSet });
+                        //xc=xg-(zc-zg)*tg 
+                        //zc=zg-(yc-yg)*tg
+                        console.log('etta', MathJS.abs((MathJS.tan(ShapeMath.getRad(res[0].different)) * (4.81 - res[0].MassCenter.y)) + (-2.33) - res[0].MassCenter.z));
+                        var shipGroup = new THREE.Group(res[1].group);
+                        console.log('shipGroup', shipGroup);
+                        scene.add(shipGroup);
+                        // render();
+                        console.log('Build', res);
+                    })
+            };
+
+            $scope.startSpin = function () {
+                usSpinnerService.spin('spinner-1');
+            }
+            $scope.stopSpin = function () {
+                usSpinnerService.stop('spinner-1');
+            }
+            $scope.cleareScene = () => {
+                while (scene.children.length > 0) {
+                    scene.remove(scene.children[0]);
+                }
+                init();
+            }
+
+
+
+
+
         }]);
+
 
 
 'use strict';
@@ -43697,7 +43847,7 @@ angular.module('app')
         function homeController($rootScope, $scope, $q, $mdDialog, $timeout, $mdpDatePicker) {
 
             $scope.language = $rootScope.getLanguage();
-            
+
             $scope.myDate = new Date();
 
             $scope.minDate = new Date(
@@ -43732,14 +43882,16 @@ angular.module('app')
 
 
             $scope.openDialog = function ($event) {
-                $mdDialog.show({
-                    controller: DialogCtrl,
-                    controllerAs: 'ctrl',
-                    templateUrl: './scripts/templates/dialog.html',
-                    parent: angular.element(document.body),
-                    targetEvent: $event,
-                    clickOutsideToClose: true
-                })
+               
+
+                // $mdDialog.show({
+                //     controller: DialogCtrl,
+                //     controllerAs: 'ctrl',
+                //     templateUrl: './scripts/templates/dialog.html',
+                //     parent: angular.element(document.body),
+                //     targetEvent: $event,
+                //     clickOutsideToClose: true
+                // })
             }
 
             $scope.user = {

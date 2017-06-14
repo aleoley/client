@@ -1,9 +1,12 @@
 // Module to control application life.
-var app = require('app'); 
-
+//var app = require('app');
+var Test = require('./server/test').Test;
+const Router = require('./server/Router');
+const { ipcMain, BrowserWindow, app } = require('electron');
+var electron = require('electron');
 // Module to create native browser window.
-var BrowserWindow = require('browser-window');
 
+console.log('ipcMain', ipcMain);
 var mainWindow = null;
 
 // Quit when all windows are closed.
@@ -18,14 +21,14 @@ app.on('window-all-closed', function () {
 // initialization and is ready to create browser windows.
 app.on('ready', function () {
   // Create the browser window.
-  
+
   mainWindow = new BrowserWindow({ width: 1920, height: 1080 });
 
   // and load the index.html of the app.
-  mainWindow.loadUrl('file://' + __dirname + '/index.html');
+  mainWindow.loadURL('file://' + __dirname + '/index.html');
 
   // Open the devtools.
-   mainWindow.openDevTools();
+  mainWindow.openDevTools();
 
   // Emitted when the window is closed.
   mainWindow.on('closed', function () {
@@ -34,4 +37,14 @@ app.on('ready', function () {
     // when you should delete the corresponding element.
     mainWindow = null;
   });
+
+  //=============================START MAIN ROUTER=========================
+
+  ipcMain.on('stabilazed_volume', Router.stabilazed_volume);
+  ipcMain.on('stabilazed_different', Router.stabilazed_different);
+  ipcMain.on('load_ship', Router.load_ship);
+  ipcMain.on('build_model', Router.build_model);
+
+  //===============================END MAIN ROUTER=========================
+  
 });

@@ -37,10 +37,10 @@ angular.module('app')
             $scope.model3d = false;
             $scope.model2d = false;
             $scope.finded_different = {
-                different: 0.14320987654320974
+                different: 0
             }
             $scope.finded_filter = {
-                h: 3.3
+                h: 15.3
             }
 
             $scope.initialPlusX = {
@@ -185,8 +185,8 @@ angular.module('app')
                         initialPlusX: parseFloat($scope.initialPlusX.x),
                         Ship: $scope.Ship,
                         searchMassCenter: new THREE.Vector3(0, 4.81, -2.33),
-                        etta: 0.01,
-                        filter: $scope.finded_filter.h,
+                        etta: 0.0001,
+                        filter: parseFloat($scope.finded_filter.h),
                         water: 1.025,
                     })
                     .then((res) => {
@@ -203,11 +203,12 @@ angular.module('app')
                         initialPlusX: parseFloat($scope.initialPlusX.x),
                         initialTimeout: 0,
                         Ship: $scope.Ship,
-                        filter: $scope.finded_filter.h,
+                        filter: parseFloat($scope.finded_filter.h),
                         different: $scope.finded_different.different,
                         createShape: true,
-                        mirrored: true,
-                        // half: true,
+                        // mirrored: true,
+                        half: true,
+                        ShipMassCenter: new THREE.Vector3(0, 4.81, -2.33),
                         water: 1.025,
                         texture: texture,
                         UpDown: true,
