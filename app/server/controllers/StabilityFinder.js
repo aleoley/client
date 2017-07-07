@@ -40,12 +40,12 @@ function Stabilized(paramsObject) {
                     return MathJS.abs(res.Volume - paramsObject.searchVolume);
                 });
                 return minFilter.h;
-
+                //return resolve(minFilter);
             })
             .then((h) => {
                 paramsObject.step = 0.1;
                 var findedEtta = 100;
-                var etta = 0.01;
+                var etta = paramsObject.etta ? paramsObject.etta : 0.01;
                 var ResultObject = {};
                 var interation = 0;
                 var start = h;
@@ -54,7 +54,7 @@ function Stabilized(paramsObject) {
                 var count = 0;
                 return new Promise((resolve2, reject2) => {
                     async.whilst(
-                        () => { return etta < findedEtta && iteration < 200; },
+                        () => { return etta < findedEtta && iteration < 100; },
                         (whilstCallback) => {
 
                             start = start + paramsObject.step;
@@ -113,7 +113,7 @@ function Stabilized(paramsObject) {
  * //Neddded to have searchMassCenter
  * //Neddded to have etta
  */
-function StabilizedByDifferent(paramsObject) {
+function StabilizedByDifferent1(paramsObject) {
 
     return new Promise(function (resolve, reject) {
         if (!paramsObject.etta || !paramsObject.searchMassCenter) {
@@ -146,15 +146,16 @@ function StabilizedByDifferent(paramsObject) {
                 var min = _.minBy(result, (res) => {
                     return getEtta(res, paramsObject);
                 });
-                return min.different;
+                return min;
+                //resolve(min);
 
             })
-            .then((different) => {
+            .then((min) => {
                 paramsObject.step = 1;
-                var findedEtta = 100;
-                var ResultObject = {};
+                var findedEtta = getEtta(min, paramsObject);
+                var ResultObject = min;
                 var interation = 0;
-                var start = different;
+                var start = min.different;
                 var resultArray = []
                 var iteration = 0;
                 var count = 0;
@@ -235,6 +236,71 @@ function StabilizedByDifferent(paramsObject) {
     });
 }
 
+function StabilizedByDifferent(paramsObject) {
+
+    return new Promise(function (resolve, reject) {
+        if (!paramsObject.etta || !paramsObject.searchMassCenter) {
+            reject('No etta or searchMassCenter  for Stabilized');
+        }
+        let start = -30;
+        let step = 10;
+        let iteration = 0;
+        let ResultObject = {};
+        let findedEtta = 100;
+
+        return new Promise((resolve2, reject2) => {
+            async.whilst(() => {
+                return paramsObject.etta < findedEtta && iteration < 100;
+            },
+                (whilstCallback) => {
+                    if (iteration)
+                        start = start + step;
+                    ModelBuilder
+                        .build(Object.assign(
+                            {},
+                            paramsObject,
+                            {
+                                initialPlusX: paramsObject.initialPlusX,
+                                UpDown: false,
+                                different: start,
+                                createShape: false,
+                                mirrored: false,
+                            }
+                        ))
+                        .then((result) => {
+                            paramsObject.defaultPoint = result.defaultPoint;
+                            paramsObject.defaultPointArray = result.defaultPointArray;
+                            var thisEtta = getEtta(result, paramsObject);
+                            if (thisEtta > findedEtta) {
+                                step = - step / 3;
+                            }
+
+                            findedEtta = thisEtta;
+                            iteration++;
+                            ResultObject = result;
+                            return whilstCallback();
+
+                        }).catch((err) => {
+                            return whilstCallback(err);
+                        });
+                },
+                (err) => {
+                    if (err) {
+                        reject2(err);
+                    } else {
+                        resolve2(ResultObject);
+                    }
+                })
+        })
+            .then((result) => {
+                resolve(result);
+            })
+            .catch((err) => {
+                reject(err);
+            });
+
+    });
+}
 
 //x=y
 //y=z

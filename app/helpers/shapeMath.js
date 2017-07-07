@@ -3,6 +3,9 @@ const THREE = require("three");
 var _ = require('lodash');
 var async = require('async');
 var ShapeMath = require('./shapeMath').ShapeMath;
+const FloatMath = require('./FloatMath').FloatMath;
+
+
 /**
  * Function for finding Volumu by 8 points in 2 shpangs
  * 
@@ -27,7 +30,8 @@ var ShapeMath = require('./shapeMath').ShapeMath;
     //    top[1]          top[2]
 */
 function getVolume(bottom, head, paramsObject) {
-
+    // console.log('getVolume bottom', bottom)
+    // console.log('getVolume head', head)
 
     //botom must have lenght=2
     if (bottom.length !== 2) {
@@ -44,320 +48,166 @@ function getVolume(bottom, head, paramsObject) {
     bottom.push(proectionX(bottom[1]));
     head.push(proectionX(head[0]));
 
-
-
-    let Volume1 = 0;
-    let Volume2 = 0;
-    let Volume3 = 0;
-    let firstAnsaver;
-    let posibleShape;
-    let triangleH1 = distanceVector(head[0], new THREE.Vector3(head[0].x, head[0].y, bottom[0].z));
-    let triangleH2 = distanceVector(head[0], head[1]);
-    //----------------------------------Previous Bad Variant
-    // if (bottom[0].z !== bottom[1].z) {
-
-    //     if (head[0].z > bottom[0].z) {
-
-    //         if (bottom[0].z < bottom[1].z) {
-
-    //             let midddleVector = new THREE.Vector3(bottom[0].x, bottom[0].y, bottom[1].z);
-    //             posibleShape = {
-    //                 bottom: [
-    //                     midddleVector,
-    //                     bottom[1],
-    //                 ],
-    //                 head: [
-    //                     bottom[0],
-    //                 ]
-    //             }
-    //             firstAnsaver = getVolume(posibleShape.bottom, posibleShape.head, paramsObject);
-    //             Volume1 = firstAnsaver.sum;
-    //             triangleH1 = distanceVector(head[0], new THREE.Vector3(head[0].x, head[0].y, bottom[1].z));
-
-    //         } else {
-
-    //             let midddleVector = new THREE.Vector3(bottom[1].x, bottom[1].y, bottom[0].z);
-    //             posibleShape = {
-    //                 bottom: [
-    //                     bottom[0],
-    //                     midddleVector,
-
-    //                 ],
-    //                 head: [
-    //                     bottom[1],
-    //                 ]
-    //             };
-
-    //             firstAnsaver = getVolume(posibleShape.bottom, posibleShape.head, paramsObject);
-    //             Volume1 = firstAnsaver.sum;
-    //         }
-
-
-    //     } else {
-
-    //         if (bottom[0].z < bottom[1].z) {
-
-    //             let midddleVector = new THREE.Vector3(bottom[1].x, bottom[1].y, bottom[0].z);
-    //             posibleShape = {
-    //                 bottom: [
-    //                     bottom[0],
-    //                     midddleVector,
-
-    //                 ],
-    //                 head: [
-    //                     bottom[1],
-
-    //                 ]
-    //             };
-
-    //             firstAnsaver = getVolume(posibleShape.bottom, posibleShape.head, paramsObject);
-    //             Volume1 = firstAnsaver.sum;
-    //         } else {
-
-    //             let midddleVector = new THREE.Vector3(bottom[0].x, bottom[0].y, bottom[1].z);
-    //             posibleShape = {
-    //                 bottom: [
-    //                     midddleVector,
-    //                     bottom[1],
-
-    //                 ],
-    //                 head: [
-    //                     bottom[0],
-
-    //                 ]
-    //             };
-    //             triangleH1 = distanceVector(head[0], new THREE.Vector3(head[0].x, head[0].y, bottom[1].z));
-
-    //             firstAnsaver = getVolume(posibleShape.bottom, posibleShape.head, paramsObject);
-    //             Volume1 = firstAnsaver.sum;
-    //         }
-
-    //     }
-    // }
-
-    //TEST
-    let triangleBottom1 = triangleSqueare(
-        distanceVector(bottom[0], bottom[1]),
-        distanceVector(bottom[1], bottom[2]),
-        distanceVector(bottom[2], bottom[0]));
-
-    let triangleBottom2 = triangleSqueare(
-        distanceVector(bottom[1], bottom[2]),
-        distanceVector(bottom[2], bottom[3]),
-        distanceVector(bottom[3], bottom[1]));
-    let triangleBottom3 = triangleSqueare(
-        distanceVector(bottom[2], bottom[3]),
-        distanceVector(bottom[3], head[1]),
-        distanceVector(head[1], bottom[2]));
-
-
-
-
-
-    Volume1 += pyramidVolume(triangleBottom1, triangleH1);
-    Volume2 += pyramidVolume(triangleBottom2, triangleH1);
-    Volume3 += pyramidVolume(triangleBottom3, triangleH2);
-    let out = {
+    let Volume1 = tetraedrVolume(head[0], bottom[0], bottom[1], bottom[3]);
+    let Volume2 = tetraedrVolume(head[0], bottom[0], bottom[2], bottom[3]);
+    let Volume3 = tetraedrVolume(head[0], bottom[2], bottom[3], head[1]);
+    if (isNaN(Volume1) || isNaN(Volume2) || isNaN(Volume3)) {
+        console.log('Volume1', Volume1)
+        console.log('Volume2', Volume2)
+        console.log('Volume3', Volume3)
+    }
+    /// newwwwwwwwww
+    return {
         Volume1: Volume1,
         Volume2: Volume2,
         Volume3: Volume3,
-        sum: Volume1 + Volume2 + Volume3
-    }
-
-    return out;
-
-
-
-
-
-
-
-
-    // //----------------------------------END Previous Bad Variant------------------------------------
-
-    // //----------------------------------------- START BOTTOM ----------------------------------------
-    // var BottomMassCenter = {};
-    // var bottomType = 0;
-    // //1.Bottom is Triangle
-    // //1.1 bottomHead Triangle
-    // if (bottom[0].x === bottom[2].x && bottom[0].y === bottom[2].y && bottom[0].z === bottom[2].z) {
-    //     bottomType = 'triangle1';
-    // }
-    // //1.2 bottomBottom Triangle
-    // if (bottom[1].x === bottom[3].x && bottom[1].y === bottom[3].y && bottom[1].z === bottom[3].z) {
-    //     bottomType = 'triangle2';
-    // }
-    // //2.Bottom is Trapeze
-    // if (bottom[0].x !== bottom[2].x && bottom[1].x !== bottom[3].x) {
-    //     bottomType = 'trapeze';
-    // }
-    // //3.Bottom is Line
-    // if ((bottom[0].x === bottom[2].x && bottom[0].y === bottom[2].y && bottom[0].z === bottom[2].z) &&
-    //     (bottom[1].x === bottom[3].x && bottom[1].y === bottom[3].y && bottom[1].z === bottom[3].z)) {
-    //     bottomType = 'line';
-    // }
-    // //4.Bottom is Point
-    // if ((bottom[0].x === bottom[2].x && bottom[0].y === bottom[2].y && bottom[0].z === bottom[2].z) &&
-    //     (bottom[1].x === bottom[3].x && bottom[1].y === bottom[3].y && bottom[1].z === bottom[3].z) &&
-    //     (bottom[2].x === bottom[3].x && bottom[2].y === bottom[3].y && bottom[2].z === bottom[3].z)
-    // ) {
-    //     bottomType = 'point';
-    // }
-
-    // //----------------------------------------- END BOTTOM ----------------------------------------
-
-
-
-    // //----------------------------------------- START HEAD ----------------------------------------
-    // var headType = 0;
-    // //1.Head is Line
-    // if (head[0].x !== head[1].x) {
-    //     headType = 'line'
-    // }
-    // //2.Head is Point
-    // if (head[0].x === head[1].x && head[0].y === head[1].y && head[0].z === head[1].z) {
-    //     headType = 'point'
-    // }
-
-    // //----------------------------------------- END HEAD ----------------------------------------
-
-
-    // var bottomSquere = 0;
-    // // h must be fixed by default
-    // var vectorAH = new THREE.Vector3(0, 0, bottom[0].z);
-    // var vectorBH = new THREE.Vector3(0, 0, head[0].z);
-    // var fixedH = distanceVector(vectorAH, vectorBH);
-    // var pyramid2H = distanceVector(head[0], head[1]);
-
-    // var buttomA = distanceVector(bottom[0], bottom[2]);
-    // var buttomB = distanceVector(bottom[1], bottom[3]);
-    // var buttomC = distanceVector(bottom[0], bottom[1]);
-    // var buttomD = distanceVector(bottom[2], bottom[3]);
-
-    // var triangleA = distanceVector(bottom[2], bottom[3]);
-    // var triangleB = distanceVector(head[1], bottom[3]);
-    // var triangleC = distanceVector(bottom[2], head[1]);
-
-    // switch (true) {
-    //     case bottomType === 'trapeze' && headType === 'line':
-    //         bottomSquere = trapezeSqueare(buttomA, buttomB, buttomC, buttomD, 'govno1');
-    //         var triangleSqueareV2 = triangleSqueare(triangleA, triangleB, triangleC)
-
-
-
-    //         var V1 = pyramidVolume(bottomSquere, fixedH);
-    //         var V2 = pyramidVolume(triangleSqueareV2, pyramid2H);
-
-    //         Answer = {
-    //             TrapezePyramidVolume: V1,
-    //             TrianglePyramidVolume: V2,
-    //             sum: V1 + V2
-    //         };
-    //         break;
-
-    //     case bottomType === 'trapeze' && headType === 'point':
-    //         bottomSquere = trapezeSqueare(buttomA, buttomB, buttomC, buttomD, 'govno1');
-    //         var outerSquere = pyramidVolume(bottomSquere, fixedH)
-    //         Answer = {
-    //             TrapezePyramidVolume: outerSquere / 2,
-    //             TrianglePyramidVolume: outerSquere / 2,
-    //             sum: outerSquere
-    //         }
-    //         break;
-    //     case bottomType === 'triangle1' && headType === 'line':
-    //         bottomSquere = triangleSqueare(buttomB, buttomC, buttomD);
-    //         var outerSquere = pyramidVolume(bottomSquere, fixedH)
-    //         Answer = {
-    //             TrapezePyramidVolume: outerSquere / 2,
-    //             TrianglePyramidVolume: outerSquere / 2,
-    //             sum: outerSquere
-    //         }
-    //         break;
-    //     case bottomType === 'triangle1' && headType === 'point':
-    //         bottomSquere = triangleSqueare(buttomB, buttomC, buttomD);
-    //         var outerSquere = pyramidVolume(bottomSquere, fixedH)
-    //         Answer = {
-    //             TrapezePyramidVolume: outerSquere / 2,
-    //             TrianglePyramidVolume: outerSquere / 2,
-    //             sum: outerSquere
-    //         }
-    //         break;
-    //     case bottomType === 'triangle2' && headType === 'line':
-    //         bottomSquere = triangleSqueare(buttomA, buttomC, buttomD);
-    //         var outerSquere = pyramidVolume(bottomSquere, fixedH)
-    //         Answer = {
-    //             TrapezePyramidVolume: outerSquere / 2,
-    //             TrianglePyramidVolume: outerSquere / 2,
-    //             sum: outerSquere
-    //         }
-    //         break;
-    //     case bottomType === 'triangle2' && headType === 'point':
-
-    //         bottomSquere = triangleSqueare(buttomA, buttomC, buttomD);
-    //         var outerSquere = pyramidVolume(bottomSquere, fixedH)
-    //         Answer = {
-    //             TrapezePyramidVolume: outerSquere / 2,
-    //             TrianglePyramidVolume: outerSquere / 2,
-    //             sum: outerSquere
-    //         }
-    //         break;
-    //     case bottomType === 'line' && headType === 'line':
-    //         var spec1 = distanceVector(bottom[3], head[1]);
-    //         var spec2 = distanceVector(bottom[2], head[1]);
-
-    //         bottomSquere = triangleSqueare(spec1, spec2, buttomD);
-    //         var outerSquere = pyramidVolume(bottomSquere, pyramid2H);
-    //         Answer = {
-    //             TrapezePyramidVolume: outerSquere / 2,
-    //             TrianglePyramidVolume: outerSquere / 2,
-    //             sum: outerSquere
-    //         }
-    //         break;
-    //     case bottomType === 'line' && headType === 'point':
-    //         Answer = {
-    //             TrapezePyramidVolume: 0,
-    //             TrianglePyramidVolume: 0,
-    //             sum: 0
-    //         }
-    //         break;
-    //     case bottomType === 'point' && headType === 'line':
-    //         Answer = {
-    //             TrapezePyramidVolume: 0,
-    //             TrianglePyramidVolume: 0,
-    //             sum: 0
-    //         }
-    //         break;
-    //     case bottomType === 'point' && headType === 'point':
-    //         Answer = {
-    //             TrapezePyramidVolume: 0,
-    //             TrianglePyramidVolume: 0,
-    //             sum: 0
-    //         }
-    //         break;
-    //     default:
-    //         throw new Error('Something went wrong!');
-
-
-    // }
-
-    // if (firstAnsaver) {
-    //     console.log('firstAnsaver', firstAnsaver);
-    //     if (firstAnsaver.sum === 0) {
-    //         firstAnsaver.massCenter = getMassCenter(posibleShape.bottom, posibleShape.head);
-    //         Answer.firstAnsaver = firstAnsaver;
-    //     }
-    // }
-    // return Answer;
+        sum: FloatMath.add(
+            FloatMath.add(
+                Volume1,
+                Volume2
+            ),
+            Volume3)
+    };
 }
 /**
  * Function for Calculating distance 
  */
 function distanceVector(v1, v2) {
-    var dx = v1.x - v2.x;
-    var dy = v1.y - v2.y;
-    var dz = v1.z - v2.z;
+    var dx = FloatMath.subtract(v2.x, v1.x);
+    var dy = FloatMath.subtract(v2.y, v1.y);
+    var dz = FloatMath.subtract(v2.z, v1.z);
+    return Math.sqrt(FloatMath.add(
+        FloatMath.multiply(
+            dx,
+            dx
+        ),
+        FloatMath.add(
+            FloatMath.multiply(
+                dy,
+                dy
+            ),
+            FloatMath.multiply(
+                dz,
+                dz
+            )
+        )
+    ));
+}
+/**
+ * 
+ * @param {head} a 
+ * @param {*} b 
+ * @param {*} c 
+ * @param {*} d 
+ */
+function tetraedrVolume(a, b, c, d) {
+    let ab = new THREE.Vector3(
+        FloatMath.subtract(
+            b.x,
+            a.x
+        ),
+        FloatMath.subtract(
+            b.y,
+            a.y
+        ),
+        FloatMath.subtract(
+            b.z,
+            a.z
+        )
+    );
 
-    return Math.sqrt(dx * dx + dy * dy + dz * dz);
+    let ac = new THREE.Vector3(
+        FloatMath.subtract(
+            c.x,
+            a.x
+        ),
+        FloatMath.subtract(
+            c.y,
+            a.y
+        ),
+        FloatMath.subtract(
+            c.z,
+            a.z
+        )
+    );
+    let ad = new THREE.Vector3(
+        FloatMath.subtract(
+            d.x,
+            a.x
+        ),
+        FloatMath.subtract(
+            d.y,
+            a.y
+        ),
+        FloatMath.subtract(
+            d.z,
+            a.z
+        )
+    );
+    // console.log('ab', ab)
+    // console.log('ac', ac)
+    // console.log('ad', ad)
+
+
+    let vectorMultiply1 = FloatMath.multiply(
+        ab.x,
+        FloatMath.subtract(
+            FloatMath.multiply(
+                ac.y,
+                ad.z
+            ),
+            FloatMath.multiply(
+                ac.z,
+                ad.y
+            )
+        )
+    );
+    let vectorMultiply2 = FloatMath.multiply(
+        ab.y,
+        FloatMath.subtract(
+            FloatMath.multiply(
+                ac.x,
+                ad.z
+            ),
+            FloatMath.multiply(
+                ac.z,
+                ad.x
+            )
+        )
+    );
+    let vectorMultiply3 = FloatMath.multiply(
+        ab.z,
+        FloatMath.subtract(
+
+            FloatMath.multiply(
+                ac.x,
+                ad.y
+            ),
+            FloatMath.multiply(
+                ac.y,
+                ad.x
+            )
+        )
+    );
+    // console.log('vectorMultiply1', vectorMultiply1)
+    // console.log('vectorMultiply2', vectorMultiply2)
+    // console.log('vectorMultiply3', vectorMultiply3)
+
+    let result = MathJS.abs(FloatMath.add(
+        FloatMath.subtract(
+            vectorMultiply1,
+            vectorMultiply2
+        ),
+        vectorMultiply3
+    ));
+    // console.log('result', result)
+    let out = FloatMath.divide(
+        result,
+        6
+    );
+    // console.log('out', out)
+    return out;
+    // throw new Error('foo');
 }
 
 
@@ -382,8 +232,8 @@ function getMassCenter(bottom, head) {
     // };
 
     return {
-        massCenter1: tetraedrMassCenter(bottom[0], bottom[1], bottom[2], head[0]),
-        massCenter2: tetraedrMassCenter(bottom[1], bottom[2], bottom[3], head[0]),
+        massCenter1: tetraedrMassCenter(bottom[0], bottom[1], bottom[3], head[0]),
+        massCenter2: tetraedrMassCenter(bottom[0], bottom[2], bottom[3], head[0]),
         massCenter3: tetraedrMassCenter(bottom[2], bottom[3], head[1], head[0]),
     }
 
@@ -489,43 +339,43 @@ function massCenterCheck(massCenter, bottom, head) {
 }
 
 function inDivide(a, b, head, bottom) {
-    var headPerBottom = floatMath().divide(head, bottom);
+    var headPerBottom = FloatMath.divide(head, bottom);
 
-    var x = floatMath().divide(
-        floatMath().add(
+    var x = FloatMath.divide(
+        FloatMath.add(
             a.x,
-            floatMath().multiply(
+            FloatMath.multiply(
                 headPerBottom,
                 b.x
             )
         ),
-        floatMath().add(
+        FloatMath.add(
             1,
             headPerBottom
         )
     );
-    var y = floatMath().divide(
-        floatMath().add(
+    var y = FloatMath.divide(
+        FloatMath.add(
             a.y,
-            floatMath().multiply(
+            FloatMath.multiply(
                 headPerBottom,
                 b.y
             )
         ),
-        floatMath().add(
+        FloatMath.add(
             1,
             headPerBottom
         )
     );
-    var z = floatMath().divide(
-        floatMath().add(
+    var z = FloatMath.divide(
+        FloatMath.add(
             a.z,
-            floatMath().multiply(
+            FloatMath.multiply(
                 headPerBottom,
                 b.z
             )
         ),
-        floatMath().add(
+        FloatMath.add(
             1,
             headPerBottom
         )
@@ -559,47 +409,47 @@ function intersectionPlaneLine(plane, line, debug) {
 
     // ----------- create nedded components for plane 
     //A
-    var pA1 = floatMath().multiply(floatMath().subtract(p2.y, p1.y), floatMath().subtract(p3.z, p1.z));
-    var pA2 = floatMath().multiply(floatMath().subtract(p2.z, p1.z), floatMath().subtract(p3.y, p1.y));
-    var A = floatMath().subtract(pA1, pA2);
+    var pA1 = FloatMath.multiply(FloatMath.subtract(p2.y, p1.y), FloatMath.subtract(p3.z, p1.z));
+    var pA2 = FloatMath.multiply(FloatMath.subtract(p2.z, p1.z), FloatMath.subtract(p3.y, p1.y));
+    var A = FloatMath.subtract(pA1, pA2);
 
     //B
-    var pB1 = floatMath().multiply(floatMath().subtract(p2.x, p1.x), floatMath().subtract(p3.z, p1.z));
-    var pB2 = floatMath().multiply(floatMath().subtract(p2.z, p1.z), floatMath().subtract(p3.x, p1.x));
-    var B = floatMath().subtract(pB1, pB2);
+    var pB1 = FloatMath.multiply(FloatMath.subtract(p2.x, p1.x), FloatMath.subtract(p3.z, p1.z));
+    var pB2 = FloatMath.multiply(FloatMath.subtract(p2.z, p1.z), FloatMath.subtract(p3.x, p1.x));
+    var B = FloatMath.subtract(pB1, pB2);
 
     //C
-    var pC1 = floatMath().multiply(floatMath().subtract(p2.x, p1.x), floatMath().subtract(p3.y, p1.y));
-    var pC2 = floatMath().multiply(floatMath().subtract(p2.y, p1.y), floatMath().subtract(p3.x, p1.x));
-    var C = floatMath().subtract(pC1, pC2);
+    var pC1 = FloatMath.multiply(FloatMath.subtract(p2.x, p1.x), FloatMath.subtract(p3.y, p1.y));
+    var pC2 = FloatMath.multiply(FloatMath.subtract(p2.y, p1.y), FloatMath.subtract(p3.x, p1.x));
+    var C = FloatMath.subtract(pC1, pC2);
 
     // Search for T param
 
-    var tA_x = floatMath().multiply(A, floatMath().subtract(l2.x, l1.x));
-    var tB_y = floatMath().multiply(B, floatMath().subtract(l2.y, l1.y));
-    var tC_z = floatMath().multiply(C, floatMath().subtract(l2.z, l1.z));
+    var tA_x = FloatMath.multiply(A, FloatMath.subtract(l2.x, l1.x));
+    var tB_y = FloatMath.multiply(B, FloatMath.subtract(l2.y, l1.y));
+    var tC_z = FloatMath.multiply(C, FloatMath.subtract(l2.z, l1.z));
 
-    var divideT = floatMath().add(tC_z, floatMath().subtract(tA_x, tB_y));
+    var divideT = FloatMath.add(tC_z, FloatMath.subtract(tA_x, tB_y));
     // if (divideT === 0 || isNaN(divideT)) {
     //     divideT = 0.000001;
     // }
 
-    var A_x = floatMath().multiply(A, floatMath().subtract(l1.x, p1.x));
-    var B_y = floatMath().multiply(B, floatMath().subtract(l1.y, p1.y));
-    var C_z = floatMath().multiply(C, floatMath().subtract(l1.z, p1.z));
+    var A_x = FloatMath.multiply(A, FloatMath.subtract(l1.x, p1.x));
+    var B_y = FloatMath.multiply(B, FloatMath.subtract(l1.y, p1.y));
+    var C_z = FloatMath.multiply(C, FloatMath.subtract(l1.z, p1.z));
 
-    var headT = floatMath().add(C_z, floatMath().subtract(A_x, B_y));
+    var headT = FloatMath.add(C_z, FloatMath.subtract(A_x, B_y));
 
-    var t = floatMath().divide(-headT, divideT);
+    var t = FloatMath.divide(-headT, divideT);
 
     if (debug) {
         console.log('t', t);
     }
 
     if (!isNaN(t)) {
-        var x = floatMath().add(floatMath().multiply(t, floatMath().subtract(l2.x, l1.x)), l1.x);
-        var y = floatMath().add(floatMath().multiply(t, floatMath().subtract(l2.y, l1.y)), l1.y);
-        var z = floatMath().add(floatMath().multiply(t, floatMath().subtract(l2.z, l1.z)), l1.z);
+        var x = FloatMath.add(FloatMath.multiply(t, FloatMath.subtract(l2.x, l1.x)), l1.x);
+        var y = FloatMath.add(FloatMath.multiply(t, FloatMath.subtract(l2.y, l1.y)), l1.y);
+        var z = FloatMath.add(FloatMath.multiply(t, FloatMath.subtract(l2.z, l1.z)), l1.z);
 
         return new THREE.Vector3(x, y, z);
     } else {
@@ -623,12 +473,12 @@ function intersection(a, b, c, d) {
     }
 
     var components = {
-        a1: floatMath().subtract(b.x, a.x),
-        a2: floatMath().subtract(d.x, c.x),
-        b1: floatMath().subtract(b.y, a.y),
-        b2: floatMath().subtract(d.y, c.y),
-        c1: floatMath().subtract(b.z, a.z),
-        c2: floatMath().subtract(d.z, c.z),
+        a1: FloatMath.subtract(b.x, a.x),
+        a2: FloatMath.subtract(d.x, c.x),
+        b1: FloatMath.subtract(b.y, a.y),
+        b2: FloatMath.subtract(d.y, c.y),
+        c1: FloatMath.subtract(b.z, a.z),
+        c2: FloatMath.subtract(d.z, c.z),
     }
 
 
@@ -674,43 +524,43 @@ function intersection(a, b, c, d) {
 
     for (var i = 0; i < combinations.length; i++) {
         //a2*b1-a1*b2
-        bottom = floatMath().subtract(
-            floatMath().multiply(
+        bottom = FloatMath.subtract(
+            FloatMath.multiply(
                 components[combinations[i][0] + '2'],
                 components[combinations[i][1] + '1']
             ),
-            floatMath().multiply(
+            FloatMath.multiply(
                 components[combinations[i][0] + '1'],
                 components[combinations[i][1] + '2']
             )
         );
         if (bottom !== 0 && !isNaN(bottom)) {
             // a1*y1'-a1*y1 + b1*x1-b1*x1'
-            var head = floatMath().add(
-                floatMath().subtract(
-                    floatMath().multiply(
+            var head = FloatMath.add(
+                FloatMath.subtract(
+                    FloatMath.multiply(
                         components[combinations[i][0] + '1'],
                         c[combinations[i][3]]
                     ),
-                    floatMath().multiply(
+                    FloatMath.multiply(
                         components[combinations[i][0] + '1'],
                         a[combinations[i][3]]
                     )
                 ),
-                floatMath().subtract(
-                    floatMath().multiply(
+                FloatMath.subtract(
+                    FloatMath.multiply(
                         components[combinations[i][1] + '1'],
                         a[combinations[i][2]]
 
                     ),
-                    floatMath().multiply(
+                    FloatMath.multiply(
                         c[combinations[i][2]],
                         components[combinations[i][1] + '1']
                     )
                 )
             );
 
-            p = floatMath().divide(head, bottom);
+            p = FloatMath.divide(head, bottom);
 
             if (!isNaN(p)) {
                 //  console.log('Break', p);
@@ -722,22 +572,22 @@ function intersection(a, b, c, d) {
         }
     }
 
-    var x = floatMath().add(
-        floatMath().multiply(
+    var x = FloatMath.add(
+        FloatMath.multiply(
             p,
             components.a2
         ),
         c.x
     );
-    var y = floatMath().add(
-        floatMath().multiply(
+    var y = FloatMath.add(
+        FloatMath.multiply(
             p,
             components.b2
         ),
         c.y
     );
-    var z = floatMath().add(
-        floatMath().multiply(
+    var z = FloatMath.add(
+        FloatMath.multiply(
             p,
             components.c2
         ),
@@ -838,52 +688,52 @@ function trapezeMassCenter(bottom, head) {
             distanceVector(proectionPoint, head[0])
         )
         var triaMassCenter = triangleMassCenter(bottom[0], proectionPoint, head[0]);
-        var parallelogramSquere = floatMath().multiply(
+        var parallelogramSquere = FloatMath.multiply(
             distanceVector(bottom[1], head[1]),
             distanceVector(bottom[1], proectionPoint)
         );
         var parallelogramMassCenter = intersection(head[1], proectionPoint, bottom[1], head[0]);
-        Xc = floatMath().divide(floatMath().add(
-            floatMath().multiply(
+        Xc = FloatMath.divide(FloatMath.add(
+            FloatMath.multiply(
                 triaSquere,
                 triaMassCenter.x
             ),
-            floatMath().multiply(
+            FloatMath.multiply(
                 parallelogramSquere,
                 parallelogramMassCenter.x
             )
         ),
-            floatMath().add(
+            FloatMath.add(
                 triaSquere,
                 parallelogramSquere
             )
         );
-        Yc = floatMath().divide(floatMath().add(
-            floatMath().multiply(
+        Yc = FloatMath.divide(FloatMath.add(
+            FloatMath.multiply(
                 triaSquere,
                 triaMassCenter.y
             ),
-            floatMath().multiply(
+            FloatMath.multiply(
                 parallelogramSquere,
                 parallelogramMassCenter.y
             )
         ),
-            floatMath().add(
+            FloatMath.add(
                 triaSquere,
                 parallelogramSquere
             )
         );
-        Zc = floatMath().divide(floatMath().add(
-            floatMath().multiply(
+        Zc = FloatMath.divide(FloatMath.add(
+            FloatMath.multiply(
                 triaSquere,
                 triaMassCenter.z
             ),
-            floatMath().multiply(
+            FloatMath.multiply(
                 parallelogramSquere,
                 parallelogramMassCenter.z
             )
         ),
-            floatMath().add(
+            FloatMath.add(
                 triaSquere,
                 parallelogramSquere
             )
@@ -897,52 +747,52 @@ function trapezeMassCenter(bottom, head) {
             distanceVector(proectionPoint, head[0])
         )
         var triaMassCenter = triangleMassCenter(bottom[0], proectionPoint, head[0]);
-        var parallelogramSquere = floatMath().multiply(
+        var parallelogramSquere = FloatMath.multiply(
             distanceVector(bottom[1], head[1]),
             distanceVector(head[1], proectionPoint)
         );
         var parallelogramMassCenter = intersection(bottom[1], proectionPoint, bottom[0], head[1]);
-        Xc = floatMath().divide(floatMath().add(
-            floatMath().multiply(
+        Xc = FloatMath.divide(FloatMath.add(
+            FloatMath.multiply(
                 triaSquere,
                 triaMassCenter.x
             ),
-            floatMath().multiply(
+            FloatMath.multiply(
                 parallelogramSquere,
                 parallelogramMassCenter.x
             )
         ),
-            floatMath().add(
+            FloatMath.add(
                 triaSquere,
                 parallelogramSquere
             )
         );
-        Yc = floatMath().divide(floatMath().add(
-            floatMath().multiply(
+        Yc = FloatMath.divide(FloatMath.add(
+            FloatMath.multiply(
                 triaSquere,
                 triaMassCenter.y
             ),
-            floatMath().multiply(
+            FloatMath.multiply(
                 parallelogramSquere,
                 parallelogramMassCenter.y
             )
         ),
-            floatMath().add(
+            FloatMath.add(
                 triaSquere,
                 parallelogramSquere
             )
         );
-        Zc = floatMath().divide(floatMath().add(
-            floatMath().multiply(
+        Zc = FloatMath.divide(FloatMath.add(
+            FloatMath.multiply(
                 triaSquere,
                 triaMassCenter.z
             ),
-            floatMath().multiply(
+            FloatMath.multiply(
                 parallelogramSquere,
                 parallelogramMassCenter.z
             )
         ),
-            floatMath().add(
+            FloatMath.add(
                 triaSquere,
                 parallelogramSquere
             )
@@ -952,10 +802,10 @@ function trapezeMassCenter(bottom, head) {
 
 
     //----------------------------FISRT VARIAN
-    // var doubleHead = new THREE.Vector3(floatMath().add(bottom[0].x, head[0].x), head[0].y, head[0].z);
+    // var doubleHead = new THREE.Vector3(FloatMath.add(bottom[0].x, head[0].x), head[0].y, head[0].z);
 
 
-    // var doubleBottom = new THREE.Vector3(floatMath().subtract(0, bottom[0].x), bottom[0].y, bottom[0].z);
+    // var doubleBottom = new THREE.Vector3(FloatMath.subtract(0, bottom[0].x), bottom[0].y, bottom[0].z);
 
 
     // var massCenter = intersection(headCenter, bottomCenter, doubleBottom, doubleHead);
@@ -966,26 +816,26 @@ function trapezeMassCenter(bottom, head) {
  * 
  */
 function tetraedrMassCenter(a, b, c, d) {
-    let Xc = floatMath().divide(
-        floatMath().add(
-            floatMath().add(a.x, b.x),
-            floatMath().add(c.x, d.x)
+    let Xc = FloatMath.divide(
+        FloatMath.add(
+            FloatMath.add(a.x, b.x),
+            FloatMath.add(c.x, d.x)
         ),
         4
     );
 
-    let Yc = floatMath().divide(
-        floatMath().add(
-            floatMath().add(a.y, b.y),
-            floatMath().add(c.y, d.y)
+    let Yc = FloatMath.divide(
+        FloatMath.add(
+            FloatMath.add(a.y, b.y),
+            FloatMath.add(c.y, d.y)
         ),
         4
     );
 
-    let Zc = floatMath().divide(
-        floatMath().add(
-            floatMath().add(a.z, b.z),
-            floatMath().add(c.z, d.z)
+    let Zc = FloatMath.divide(
+        FloatMath.add(
+            FloatMath.add(a.z, b.z),
+            FloatMath.add(c.z, d.z)
         ),
         4
     );
@@ -993,25 +843,25 @@ function tetraedrMassCenter(a, b, c, d) {
     return new THREE.Vector3(Xc, Yc, Zc);
 }
 function triangleMassCenter(a, b, c) {
-    let Xc = floatMath().divide(
-        floatMath().add(
-            floatMath().add(a.x, b.x),
+    let Xc = FloatMath.divide(
+        FloatMath.add(
+            FloatMath.add(a.x, b.x),
             c.x
         ),
         3
     );
 
-    let Yc = floatMath().divide(
-        floatMath().add(
-            floatMath().add(a.y, b.y),
+    let Yc = FloatMath.divide(
+        FloatMath.add(
+            FloatMath.add(a.y, b.y),
             c.y
         ),
         3
     );
 
-    let Zc = floatMath().divide(
-        floatMath().add(
-            floatMath().add(a.z, b.z),
+    let Zc = FloatMath.divide(
+        FloatMath.add(
+            FloatMath.add(a.z, b.z),
             c.z
         ),
         3
@@ -1144,9 +994,9 @@ function parallelogramVolume(a, b, c) {
 
 function vertexCenter(vertex1, vertex2) {
 
-    var x = floatMath().divide(floatMath().add(vertex1.x, vertex2.x), 2);
-    var y = floatMath().divide(floatMath().add(vertex1.y, vertex2.y), 2);
-    var z = floatMath().divide(floatMath().add(vertex1.z, vertex2.z), 2);
+    var x = FloatMath.divide(FloatMath.add(vertex1.x, vertex2.x), 2);
+    var y = FloatMath.divide(FloatMath.add(vertex1.y, vertex2.y), 2);
+    var z = FloatMath.divide(FloatMath.add(vertex1.z, vertex2.z), 2);
 
     return new THREE.Vector3(x, y, z);
 }
@@ -1160,9 +1010,9 @@ function vertexCenter(vertex1, vertex2) {
  * @param {vector} point 
  */
 function returnYbyLine(l1, l2, z) {
-    var z = floatMath().divide(floatMath().subtract(z, l1.z), floatMath().subtract(l2.z, l1.z));
+    var z = FloatMath.divide(FloatMath.subtract(z, l1.z), FloatMath.subtract(l2.z, l1.z));
 
-    return floatMath().add(floatMath().multiply(z, floatMath().subtract(l2.y, l1.y)), l1.y);
+    return FloatMath.add(FloatMath.multiply(z, FloatMath.subtract(l2.y, l1.y)), l1.y);
 
 }
 
@@ -1238,55 +1088,59 @@ function minDistanse(vertex, shapg, shpangX) {
 //multiplication
 //division
 //addition
-function floatMath() {
-    this.add = add;
-    this.subtract = subtract;
-    this.multiply = multiply;
-    this.divide = divide;
-    /**
-     * subtract
-     * @param {*} a 
-     * @param {*} b 
-     */
-    function subtract(a, b) {
-        return MathJS.round(Math.round((a - b) * 1e12) / 1e12, 5);
 
-    }
 
-    /**
-     * add
-     * @param {*} a 
-     * @param {*} b 
-     */
-    function add(a, b) {
-        return MathJS.round(Math.round((a + b) * 1e12) / 1e12, 5);
-    }
 
-    /**
-     * multiply
-     * @param {*} a 
-     * @param {*} b 
-     */
-    function multiply(a, b) {
-        return MathJS.round(Math.round((a * b) * 1e12) / 1e12, 5);
-    }
 
-    /**
-     * divide
-     * @param {*} a 
-     * @param {*} b 
-     */
-    function divide(a, b) {
-        return MathJS.round(Math.round((a / b) * 1e12) / 1e12, 5);
-    }
+// function FloatMath {
+//     this.add = add;
+//     this.subtract = subtract;
+//     this.multiply = multiply;
+//     this.divide = divide;
+//     /**
+//      * subtract
+//      * @param {*} a 
+//      * @param {*} b 
+//      */
+//     function subtract(a, b) {
+//         return Math.round((a - b) * 1e12) / 1e12;
 
-    return {
-        subtract: subtract,
-        multiply: multiply,
-        divide: divide,
-        add: add
-    }
-}
+//     }
+
+//     /**
+//      * add
+//      * @param {*} a 
+//      * @param {*} b 
+//      */
+//     function add(a, b) {
+//         return Math.round((a + b) * 1e12) / 1e12;
+//     }
+
+//     /**
+//      * multiply
+//      * @param {*} a 
+//      * @param {*} b 
+//      */
+//     function multiply(a, b) {
+//         return Math.round((a * b) * 1e12) / 1e12;
+//     }
+
+//     /**
+//      * divide
+//      * @param {*} a 
+//      * @param {*} b 
+//      */
+//     function divide(a, b) {
+//         return Math.round((a / b) * 1e12) / 1e12;
+//     }
+
+//     return {
+//         subtract: subtract,
+//         multiply: multiply,
+//         divide: divide,
+//         add: add
+//     }
+// }
 function getRad(deg) {
     var rad = deg * Math.PI / 180;
     return rad;
@@ -1294,7 +1148,7 @@ function getRad(deg) {
 
 
 exports.ShapeMath = {
-    FloatMath: floatMath,
+    FloatMath: FloatMath,
     getMassCenter: getMassCenter,
     returnYbyLine: returnYbyLine,
     intersectionPlaneLine: intersectionPlaneLine,

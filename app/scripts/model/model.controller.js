@@ -44,7 +44,7 @@ angular.module('app')
             }
 
             $scope.initialPlusX = {
-                x: 0
+                x: 1
             };
             $scope.ResultShipData = {};
 
@@ -167,6 +167,7 @@ angular.module('app')
                         Ship: $scope.Ship,
                         searchVolume: $scope.Ship.Weight / 1.025,
                         step: 0.1,
+                        etta: 0.1,
                         water: 1.025,
                     })
                     .then((res) => {
@@ -185,7 +186,7 @@ angular.module('app')
                         initialPlusX: parseFloat($scope.initialPlusX.x),
                         Ship: $scope.Ship,
                         searchMassCenter: new THREE.Vector3(0, 4.81, -2.33),
-                        etta: 0.0001,
+                        etta: 0.001,
                         filter: parseFloat($scope.finded_filter.h),
                         water: 1.025,
                     })
@@ -201,13 +202,13 @@ angular.module('app')
                 ModelBuilder
                     .build({
                         initialPlusX: parseFloat($scope.initialPlusX.x),
-                        initialTimeout: 0,
+                        initialTimeout:0,
                         Ship: $scope.Ship,
                         filter: parseFloat($scope.finded_filter.h),
                         different: $scope.finded_different.different,
                         createShape: true,
-                        // mirrored: true,
-                        half: true,
+                        mirrored: true,
+                        // half: true,
                         ShipMassCenter: new THREE.Vector3(0, 4.81, -2.33),
                         water: 1.025,
                         texture: texture,

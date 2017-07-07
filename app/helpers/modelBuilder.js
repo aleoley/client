@@ -7,6 +7,8 @@ require("../lib/ConvexGeometry.js");
 //var Detector = require("../lib/Detector");
 var Stats = require("../lib/stats.min.js");
 const MathJS = require('mathjs');
+const RandomColors = require('randomcolor');
+const FloatMath = require('./FloatMath').FloatMath;
 'use strict';
 
 /**
@@ -24,26 +26,33 @@ function distanceVector(v1, v2) {
 /**
  * This function must return only 2 vertex with min distanse to current
  */
-function minDistanse(vertex, shapg, shpangX) {
+function minDistanse(vertex, shapg, previousBottom, previousHead) {
 
 
     outArray = [];
-    var i = 0
+
     var sortedShapng = _.sortBy(shapg, function (point) {
-        return point.y;
+        return point.y
     })
     var more = _.filter(sortedShapng, function (point) {
         return vertex.y < point.y;
     });
     var less = _.filter(sortedShapng, function (point) {
-        return vertex.y >= point.y;
+        return vertex.y > point.y && MathJS.abs(FloatMath.subtract(point.y, vertex.y));
     });
+    // more = _.sortBy(more, (point) => {
+    //     return [MathJS.abs(FloatMath.subtract(point.y, vertex.y)), distanceVector(vertex, point)];
+    // })
+    // less = _.sortBy(less, (point) => {
+    //     return [MathJS.abs(FloatMath.subtract(point.y, vertex.y)), distanceVector(vertex, point)];
+    // })
+
 
     if (more.length > 0 && less.length > 0) {
 
 
-        var moreDistance = Math.abs(Math.round((more[0].y - vertex.y) * 1e12) / 1e12);
-        var lessDistance = Math.abs(Math.round((less[less.length - 1].y - vertex.y) * 1e12) / 1e12);
+        let moreDistance = MathJS.abs(FloatMath.subtract(more[0].y, vertex.y));
+        let lessDistance = MathJS.abs(FloatMath.subtract(less[less.length - 1].y, vertex.y));
 
         switch (true) {
             case moreDistance.toFixed(3) > lessDistance.toFixed(3):
@@ -52,10 +61,15 @@ function minDistanse(vertex, shapg, shpangX) {
             case moreDistance.toFixed(3) < lessDistance.toFixed(3):
                 outArray.push(more[0]);
                 break;
-            case moreDistance.toFixed(3) === lessDistance.toFixed(3) || (distanceVector(vertex, more[0]) === distanceVector(vertex, less[less.length - 1])):
+            case (moreDistance.toFixed(3) === lessDistance.toFixed(3) ||
+                (FloatMath.isEqual(
+                    distanceVector(vertex, more[0]),
+                    distanceVector(vertex, less[less.length - 1])
+                ))):
+
                 outArray.push(more[0]);
                 outArray.push(less[less.length - 1]);
-                // console.log('GOVNOOOOOOO')
+
                 break;
 
             default:
@@ -63,17 +77,60 @@ function minDistanse(vertex, shapg, shpangX) {
         }
 
     } else {
-        if (less.length > 0) {
-            outArray.push(less[less.length - 1]);
+        if (less.length === 0) {
+            let minDistances = _.sortBy(shapg, (point) => {
+                MathJS.abs(FloatMath.subtract(point.y, vertex.y));
+            });
+            console.log('FOOOO1111', minDistances);
+            console.log('FOOOO1111 vertex', vertex);
+            if (FloatMath.isEqual(
+                distanceVector(vertex, minDistances[0]),
+                distanceVector(vertex, minDistances[1])) ||
+                FloatMath.isEqual(
+                    MathJS.abs(FloatMath.subtract(minDistances[0].y, vertex.y)),
+                    MathJS.abs(FloatMath.subtract(minDistances[1].y, vertex.y))
+                )
+            ) {
+                console.log('FOOOO1111')
+                outArray.push(minDistances[0]);
+                outArray.push(minDistances[1]);
+            } else {
+                outArray.push(minDistances[0]);
+            }
+            console.log('FOOOO1111 outArray', outArray)
         }
-        if (more.length > 0) {
-            outArray.push(more[0]);
+        if (more.length === 0) {
+
+            let minDistances = _.sortBy(shapg, (point) => {
+                return MathJS.abs(FloatMath.subtract(point.y, vertex.y));
+            });
+            // minDistances = _.filter(minDistances, () => {
+
+            // })
+            // console.log('FOOOO222', minDistances);
+            // console.log('FOOOO222 vertex', vertex);
+            if (FloatMath.isEqual(
+                distanceVector(vertex, minDistances[0]),
+                distanceVector(vertex, minDistances[1])) ||
+                FloatMath.isEqual(
+                    MathJS.abs(FloatMath.subtract(minDistances[0].y, vertex.y)),
+                    MathJS.abs(FloatMath.subtract(minDistances[1].y, vertex.y))
+                ) ||
+
+                minDistances[0].y === minDistances[1].y
+
+            ) {
+
+                outArray.push(minDistances[0]);
+                outArray.push(minDistances[1]);
+            } else {
+                outArray.push(minDistances[0]);
+            }
+
+            console.log('FOOOO222 outArray', outArray)
         }
+
     }
-
-
-
-
 
     return outArray;
 
@@ -225,10 +282,18 @@ function vertexCenter(vertex1, vertex2) {
 
 //===================FUNCTION FOR CREATING NEW SHAPE=========
 function addShape(points, paramsObject, callback) {
+
     if (!points || !paramsObject.createShape) {
         return callback({});
     }
-
+    let checkArray = _.map(points, (point) => {
+        return point.x === 0;
+    });
+    if (checkArray[0] === true && checkArray[1] === true && checkArray[2] === true) {
+        paramsObject.visible = false;
+    } else {
+        paramsObject.visible = true;
+    }
     var pointsGeometry = new THREE.Geometry();
 
     if (paramsObject.mirrored) {
@@ -251,7 +316,7 @@ function addShape(points, paramsObject, callback) {
     pointsGeometry.vertices = points;
 
     var pointsMaterial = new THREE.PointsMaterial({
-        color: '#5DB03D',
+        color: points[0].z === -35.21891 ? '#000000' : '#5DB03D',
         map: paramsObject.texture,
         size: 0,
         alphaTest: 0.6
@@ -264,8 +329,9 @@ function addShape(points, paramsObject, callback) {
     var meshMaterial = new THREE.MeshLambertMaterial({
 
         color: paramsObject.color ? paramsObject.color : '#5DB03D',
+        // color: RandomColors(),
         opacity: paramsObject.transparent ? 0.5 : 0,
-        transparent: paramsObject.transparent ? true : paramsObject.visible ? false : true,
+        transparent: paramsObject.visible ? false : true,
         // opacity: 0.5,
         // transparent: true
     });
@@ -273,31 +339,31 @@ function addShape(points, paramsObject, callback) {
     if (paramsObject.initialTimeout) {
         setTimeout(function () {
             var mesh = new THREE.Mesh(meshGeometry, meshMaterial.clone());
-            var massCenterPoint = getCenterPoint(mesh);
+
             if (!paramsObject.createShape) {
-                return callback(massCenterPoint);
+                return callback({});
             } else {
 
-                //  paramsObject.group.add(points);
+                paramsObject.group.add(points);
 
                 mesh.material.side = THREE.FrontSide; // front faces
                 mesh.renderOrder = 1;
                 paramsObject.group.add(mesh);
-                return callback(massCenterPoint);
+                return callback({});
             }
 
         }, paramsObject.initialTimeout);
     } else {
         var mesh = new THREE.Mesh(meshGeometry, meshMaterial.clone());
-        var massCenterPoint = getCenterPoint(mesh);
+
         if (!paramsObject.createShape) {
-            return callback(massCenterPoint);
+            return callback({});
         } else {
-            // paramsObject.group.add(points);
+            paramsObject.group.add(points);
             mesh.material.side = THREE.FrontSide; // front faces
             mesh.renderOrder = 1;
             paramsObject.group.add(mesh);
-            return callback(massCenterPoint);
+            return callback({});
         }
     }
 
@@ -318,7 +384,7 @@ function addPoint(point, paramsObject) {
     var pointsMaterial = new THREE.PointsMaterial({
         color: '#ad0808',
         map: paramsObject.texture,
-        size: 3,
+        size: 1.3,
         alphaTest: 0.6
     });
     var points = new THREE.Points(pointsGeometry, pointsMaterial);
@@ -391,14 +457,18 @@ function BuildVolume(paramsObject) {
 
                     var centerPoint = vertexCenter(proectionOnShapng(beforePoint, paramsObject.Ship.base[asyncI].ShpangX), proectionOnShapng(thisPoint, paramsObject.Ship.base[asyncI].ShpangX));
 
-                    var minDisArray = minDistanse(centerPoint, beforeShapng, paramsObject.Ship.base[asyncI - 1].ShpangX);
+                    var minDisArray = minDistanse(centerPoint, beforeShapng);
 
                     var head = [minDisArray[0]];
+                    if (minDisArray[1] && asyncJ >= beforeShapng.length - 1) {
+                        head = [minDisArray[1]];
+                    }
 
                     var shape;
                     if (paramsObject.createShape) {
                         shape = bottom.concat(head);
                     }
+
 
 
                     var volume = ShapeMath.Volume.getVolume(bottom, head, paramsObject);
@@ -435,15 +505,15 @@ function BuildVolume(paramsObject) {
 
                             var centerPoint = vertexCenter(proectionOnShapng(beforeShapng[asyncJ - 1], paramsObject.Ship.base[asyncI - 1].ShpangX), proectionOnShapng(beforeShapng[asyncJ - 0], paramsObject.Ship.base[asyncI - 1].ShpangX));
 
-                            var minDisArray2 = minDistanse(centerPoint, thisShpang, paramsObject.Ship.base[asyncI].ShpangX);
+                            var minDisArray2 = minDistanse(centerPoint, thisShpang, bottom, head);
                             var head2 = [minDisArray2[0]];
 
-                            if (minDisArray2[1]) {
+                            if (minDisArray2[1] && asyncJ < beforeShapng.length - 1) {
                                 if (minDisArray[0].y !== minDisArray2[1].y) {
-
                                     head2 = [minDisArray2[1]];
                                 }
                             }
+
                             var shape2;
                             if (paramsObject.createShape) {
                                 shape2 = bottom2.concat(head2);
@@ -503,9 +573,13 @@ function BuildVolume(paramsObject) {
                     var bottom = [beforePoint, thisPoint];
                     var centerPoint = vertexCenter(proectionOnShapng(beforePoint, paramsObject.Ship.base[asyncI - 1].ShpangX), proectionOnShapng(thisPoint, paramsObject.Ship.base[asyncI - 1].ShpangX));
 
-                    var minDisArray = minDistanse(centerPoint, thisShpang, paramsObject.Ship.base[asyncI - 1].ShpangX);
+                    var minDisArray = minDistanse(centerPoint, thisShpang);
 
                     var head = [minDisArray[0]];
+                    if (minDisArray[1] && asyncJ >= thisShpang.length - 1) {
+
+                        head = [minDisArray[1]];
+                    }
 
                     var shape;
                     if (paramsObject.createShape) {
@@ -546,15 +620,17 @@ function BuildVolume(paramsObject) {
 
                             var centerPoint = vertexCenter(proectionOnShapng(thisShpang[asyncJ - 1], paramsObject.Ship.base[asyncI].ShpangX), proectionOnShapng(thisShpang[asyncJ - 0], paramsObject.Ship.base[asyncI].ShpangX));
 
-                            var minDisArray2 = minDistanse(centerPoint, beforeShapng, paramsObject.Ship.base[asyncI - 1].ShpangX);
+                            var minDisArray2 = minDistanse(centerPoint, beforeShapng, bottom, head);
                             var head2 = [minDisArray2[0]];
 
-                            if (minDisArray2[1]) {
+                            if (minDisArray2[1] && asyncJ < thisShpang.length - 1) {
                                 if (minDisArray[0].y !== minDisArray2[1].y) {
                                     head2 = [minDisArray2[1]];
                                 }
-
                             }
+
+
+
                             var shape2;
                             if (paramsObject.createShape) {
                                 var shape2 = bottom2.concat(head2);
@@ -637,17 +713,84 @@ function BuildVolume(paramsObject) {
                     Tw: paramsObject.Tw.y,
                     Tf: paramsObject.Tf.y,
                     Ta: paramsObject.Ta.y,
-                    TfTa: ShapeMath.FloatMath().subtract(paramsObject.Tf.y, paramsObject.Ta.y),
+                    TfTa: FloatMath.subtract(paramsObject.Tf.y, paramsObject.Ta.y),
                     initialPlusX: paramsObject.initialPlusX,
                     newfilteredSquere: paramsObject.newfilteredSquere * 2,
-                    newMassCenter: paramsObject.newMassCenter
-
+                    newMassCenter: paramsObject.newMassCenter,
+                    defaultPoint: paramsObject.defaultPoint,
+                    defaultPointArray: paramsObject.defaultPointArray
                 });
             } else {
                 reject(err);
             }
         });
     });
+}
+
+function scale(shapng, k) {
+    let shpangSqueare = 0;
+    var FilteredPlaneMassCenter_X = 0;
+    var FilteredPlaneMassCenter_Y = 0;
+    var FilteredPlaneMassCenter_Z = 0;
+    // find Shapng Center 
+    for (var i = 1; i < shapng.length; i++) {
+
+
+        let thisPoint = shapng[i];
+        let previousPoint = shapng[i - 1];
+        let thisProection = proectionX(thisPoint);
+        let previousProection = proectionX(previousPoint);
+
+        let triangleMassCenter1 = ShapeMath.triangleMassCenter(thisPoint, previousPoint, previousProection);
+        let triangleMassCenter2 = ShapeMath.triangleMassCenter(thisPoint, thisProection, previousProection);
+
+        let triangleSqueare1 = ShapeMath.Squeare.Triangle(
+            ShapeMath.distanceVector(thisPoint, previousPoint),
+            ShapeMath.distanceVector(previousPoint, previousProection),
+            ShapeMath.distanceVector(previousProection, thisPoint)
+        );
+        let triangleSqueare2 = ShapeMath.Squeare.Triangle(
+            ShapeMath.distanceVector(thisPoint, thisProection),
+            ShapeMath.distanceVector(thisProection, previousProection),
+            ShapeMath.distanceVector(previousProection, thisPoint)
+        );
+
+        shpangSqueare += triangleSqueare1 + triangleSqueare2;
+
+        FilteredPlaneMassCenter_X += triangleMassCenter1.x * triangleSqueare1 + triangleMassCenter2.x * triangleSqueare2;
+        FilteredPlaneMassCenter_Y += triangleMassCenter1.y * triangleSqueare1 + triangleMassCenter2.y * triangleSqueare2;
+        FilteredPlaneMassCenter_Z += triangleMassCenter1.z * triangleSqueare1 + triangleMassCenter2.z * triangleSqueare2;
+    }
+
+    var RealMassCenter_L_X = FloatMath.divide(FilteredPlaneMassCenter_X, shpangSqueare);
+    var RealMassCenter_L_Y = FloatMath.divide(FilteredPlaneMassCenter_Y, shpangSqueare);
+    var RealMassCenter_L_Z = FloatMath.divide(FilteredPlaneMassCenter_Z, shpangSqueare);
+
+    var RealMassCenter_R_X = - RealMassCenter_L_X;
+    var RealMassCenter_R_Y = RealMassCenter_L_Y;
+    var RealMassCenter_R_Z = RealMassCenter_L_Z;
+
+    var RealMassCenter_X = (RealMassCenter_L_X * shpangSqueare + RealMassCenter_R_X * shpangSqueare) / (shpangSqueare * 2);
+    var RealMassCenter_Y = (RealMassCenter_L_Y * shpangSqueare + RealMassCenter_R_Y * shpangSqueare) / (shpangSqueare * 2);
+    var RealMassCenter_Z = (RealMassCenter_L_Z * shpangSqueare + RealMassCenter_R_Z * shpangSqueare) / (shpangSqueare * 2);
+
+    var center = new THREE.Vector3(RealMassCenter_X, RealMassCenter_Y, RealMassCenter_Z);
+
+    //console.log('center', center);
+
+    let out = _.map(shapng, (point) => {
+        return new THREE.Vector3(
+            point.x === 0 ? point.x : (point.x - center.x) * k + center.x,
+            (point.y - center.y) * k + center.y,
+
+            (point.z - center.z) * k + center.z
+        );
+    });
+
+    return out;
+
+
+
 }
 
 
@@ -661,17 +804,12 @@ function buildPlane(shpangsForWork, paramsObject, options) {
 
 
     var FilteredShpangs = _.compact(_.map(ShpangsForFilter, function (spang) {
-        var PlusShpangs = spang;
+
         // add initialPlusX if exists
         if (paramsObject.initialPlusX) {
-            PlusShpangs = _.map(spang, function (point) {
-                if (point.x !== 0) {
-                    point.x = ShapeMath.FloatMath().add(paramsObject.initialPlusX, point.x);
-                }
-                return point;
-            });
+            //  spang = scale(spang, paramsObject.initialPlusX);
         }
-
+        var PlusShpangs = spang;
         // filtered if exists
         var midddleShpang = PlusShpangs;
         if (paramsObject.filter) {
@@ -684,7 +822,7 @@ function buildPlane(shpangsForWork, paramsObject, options) {
             if ((paramsObject.different || paramsObject.different === 0)) {
 
                 var differentTan = Math.tan(ShapeMath.getRad(paramsObject.different));
-                var newZ = ShapeMath.FloatMath().multiply(differentTan, 1);
+                var newZ = FloatMath.multiply(differentTan, 1);
                 p1.y = paramsObject.filter + newZ;
                 // p1 = new THREE.Vector3(defaultPoint.x,, 1);
                 filterY = ShapeMath.returnYbyLine(p1, p2, spang[0].z);
@@ -713,11 +851,18 @@ function buildPlane(shpangsForWork, paramsObject, options) {
                     midddleShpang.push(proectionPoint);
 
                 }
+                // else {
+                //     if (midddleShpang.length === 0) {
+                //         midddleShpang.push(spang[spang.length - 1]);
+                //     }
+                // }
             }
         }
         midddleShpang = _.sortBy(midddleShpang, 'y');
-        var out = _.reverse(midddleShpang);
-        FilteredPlane.push(_.head(midddleShpang));
+        //var out = _.reverse(midddleShpang);
+        var out = midddleShpang;
+
+        FilteredPlane.push(_.last(midddleShpang));
 
         if (midddleShpang.length > 0) {
             return out;
@@ -732,8 +877,11 @@ function buildPlane(shpangsForWork, paramsObject, options) {
 
     var FilteredPlaneSquere = 0;
 
-    FilteredPlane = _.compact(FilteredPlane);
-
+    FilteredPlane = _.map(_.compact(FilteredPlane), (point) => {
+        point.y = MathJS.round(point.y, 3);
+        return point
+    });
+    console.log('FilteredPlane', FilteredPlane);
 
     for (var i = 1; i < FilteredPlane.length; i++) {
 
@@ -756,18 +904,125 @@ function buildPlane(shpangsForWork, paramsObject, options) {
             ShapeMath.distanceVector(thisProection, previousProection),
             ShapeMath.distanceVector(previousProection, thisPoint)
         );
+        let middleSquere = FloatMath.add(
+            triangleSqueare1,
+            triangleSqueare2
+        )
 
-        FilteredPlaneSquere += triangleSqueare1 + triangleSqueare2;
+        FilteredPlaneSquere = FloatMath.add(
+            FilteredPlaneSquere,
+            middleSquere
+        );
 
-        FilteredPlaneMassCenter_X += triangleMassCenter1.x * triangleSqueare1 + triangleMassCenter2.x * triangleSqueare2;
-        FilteredPlaneMassCenter_Y += triangleMassCenter1.y * triangleSqueare1 + triangleMassCenter2.y * triangleSqueare2;
-        FilteredPlaneMassCenter_Z += triangleMassCenter1.z * triangleSqueare1 + triangleMassCenter2.z * triangleSqueare2;
+
+        let middleMassCenterHead_X = FloatMath.add(
+            FloatMath.multiply(
+                triangleMassCenter1.x,
+                triangleSqueare1
+            ),
+            FloatMath.multiply(
+                triangleMassCenter2.x,
+                triangleSqueare2
+            )
+        );
+        let middleMassCenterHead_Y = FloatMath.add(
+            FloatMath.multiply(
+                triangleMassCenter1.y,
+                triangleSqueare1
+            ),
+            FloatMath.multiply(
+                triangleMassCenter2.y,
+                triangleSqueare2
+            )
+        );
+        let middleMassCenterHead_Z = FloatMath.add(
+            FloatMath.multiply(
+                triangleMassCenter1.z,
+                triangleSqueare1
+            ),
+            FloatMath.multiply(
+                triangleMassCenter2.z,
+                triangleSqueare2
+            )
+        );
+
+
+        FilteredPlaneMassCenter_X = FloatMath.add(
+            FilteredPlaneMassCenter_X,
+            middleMassCenterHead_X
+        );
+        FilteredPlaneMassCenter_Y = FloatMath.add(
+            FilteredPlaneMassCenter_Y,
+            middleMassCenterHead_Y
+        );
+        FilteredPlaneMassCenter_Z = FloatMath.add(
+            FilteredPlaneMassCenter_Z,
+            middleMassCenterHead_Z
+        );
+        let midddleMassCenter = new THREE.Vector3(
+            FloatMath.divide(
+                middleMassCenterHead_X,
+                middleSquere
+            ),
+            FloatMath.divide(
+                middleMassCenterHead_Y,
+                middleSquere
+            ),
+            FloatMath.divide(
+                middleMassCenterHead_Z,
+                middleSquere
+            )
+        );
+        if (!options.up)
+            addPoint(midddleMassCenter, paramsObject);
 
 
     }
-    var RealMassCenter_L_X = ShapeMath.FloatMath().divide(FilteredPlaneMassCenter_X, FilteredPlaneSquere);
-    var RealMassCenter_L_Y = ShapeMath.FloatMath().divide(FilteredPlaneMassCenter_Y, FilteredPlaneSquere);
-    var RealMassCenter_L_Z = ShapeMath.FloatMath().divide(FilteredPlaneMassCenter_Z, FilteredPlaneSquere);
+
+    if (!options.up) {
+        let asyncI = 0;
+        async.eachSeries(FilteredPlane, (thisPoint, eachCallback) => {
+            if (asyncI === 0) {
+                asyncI++;
+                eachCallback();
+            } else {
+
+                setTimeout(() => {
+                    let shape = [
+                        FilteredPlane[asyncI - 1],
+                        thisPoint,
+                        proectionX(FilteredPlane[asyncI - 1]),
+                        proectionX(thisPoint)
+                    ];
+                    let arr1 = [1, 2, 3, 4, 5, 3, 3, 4, 9, 9, 0, 8];
+
+                    let ar2 = _.uniqBy(shape, (p1) => {
+                        return p1.z + ' ' + p1.x
+                    });
+                    console.log('ar2', ar2);
+                    shape = _.uniqBy(shape, (p1) => {
+                        return p1.z + ' ' + p1.x
+                    });
+                    console.log('SHAPE', shape);
+                    addShape(shape, paramsObject, () => {
+
+                        eachCallback();
+                    });
+                    asyncI++
+
+                }, 1000);
+
+
+
+            }
+
+        }, () => {
+
+        });
+    }
+    var RealMassCenter_L_X = FloatMath.divide(FilteredPlaneMassCenter_X, FilteredPlaneSquere);
+    var RealMassCenter_L_Y = FloatMath.divide(FilteredPlaneMassCenter_Y, FilteredPlaneSquere);
+    var RealMassCenter_L_Z = FloatMath.divide(FilteredPlaneMassCenter_Z, FilteredPlaneSquere);
 
     var RealMassCenter_R_X = - RealMassCenter_L_X;
     var RealMassCenter_R_Y = RealMassCenter_L_Y;
@@ -809,14 +1064,24 @@ function build(paramsObject) {
 
         //if different we must find mass center of waterline Square 
         var defaultPoint = new THREE.Vector3(0, 0, 0);
-        if ((paramsObject.different || paramsObject.different === 0) && paramsObject.filter) {
-            var filteredPlaneWithoutDifferent = buildPlane(shpangsForWork, paramsObject);
+        if ((paramsObject.different || paramsObject.different === 0) && paramsObject.filter && !paramsObject.defaultPoint) {
+
+            let filteredPlaneWithoutDifferent = buildPlane(shpangsForWork, Object.assign({}, paramsObject, { different: 0 }));
             defaultPoint = filteredPlaneWithoutDifferent.massCenter;
+            paramsObject.defaultPoint = defaultPoint;
+
+
+        } else {
+            if (paramsObject.defaultPoint) {
+                defaultPoint = new THREE.Vector3(paramsObject.defaultPoint.x, paramsObject.defaultPoint.y, paramsObject.defaultPoint.z);
+            }
         }
-        if (paramsObject.UpDown) {
-            console.log('filteredPlaneWithoutDifferent', filteredPlaneWithoutDifferent)
-            console.log('shpangsForWork', shpangsForWork)
-        }
+        paramsObject.defaultPointArray = paramsObject.defaultPointArray ? paramsObject.defaultPointArray : [];
+        paramsObject.defaultPointArray.push(defaultPoint);
+        // if (paramsObject.UpDown) {
+        //     console.log('filteredPlaneWithoutDifferent', filteredPlaneWithoutDifferent)
+        //     console.log('shpangsForWork', shpangsForWork)
+        // }
 
         // at first create reverse array of shpangs
 
@@ -843,7 +1108,7 @@ function build(paramsObject) {
             var p3 = new THREE.Vector3(defaultPoint.x + 1, paramsObject.filter, defaultPoint.z);
             if (paramsObject.different) {
                 var differentTan = Math.tan(ShapeMath.getRad(paramsObject.different));
-                var newZ = ShapeMath.FloatMath().multiply(differentTan, 1);
+                var newZ = FloatMath.multiply(differentTan, 1);
                 p1.y = paramsObject.filter + newZ;
                 //p1 = new THREE.Vector3(0, paramsObject.filter + newZ, 1);
             }
@@ -863,8 +1128,8 @@ function build(paramsObject) {
                 p2,
                 p3
             ], [
-                    new THREE.Vector3(0, 0, ShapeMath.FloatMath().divide(paramsObject.Ship.Length, 2)),
-                    new THREE.Vector3(0, paramsObject.filter, ShapeMath.FloatMath().divide(paramsObject.Ship.Length, 2)),
+                    new THREE.Vector3(0, 0, FloatMath.divide(paramsObject.Ship.Length, 2)),
+                    new THREE.Vector3(0, paramsObject.filter, FloatMath.divide(paramsObject.Ship.Length, 2)),
 
                 ]);
             paramsObject.Ta = ShapeMath.intersectionPlaneLine([
@@ -872,8 +1137,8 @@ function build(paramsObject) {
                 p2,
                 p3
             ], [
-                    new THREE.Vector3(0, 0, -ShapeMath.FloatMath().divide(paramsObject.Ship.Length, 2)),
-                    new THREE.Vector3(0, paramsObject.filter, -ShapeMath.FloatMath().divide(paramsObject.Ship.Length, 2)),
+                    new THREE.Vector3(0, 0, -FloatMath.divide(paramsObject.Ship.Length, 2)),
+                    new THREE.Vector3(0, paramsObject.filter, -FloatMath.divide(paramsObject.Ship.Length, 2)),
 
                 ]);
 

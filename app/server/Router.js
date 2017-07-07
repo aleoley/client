@@ -21,6 +21,27 @@ function stabilazed_volume(event, arg) {
         }
         n.kill('SIGKILL');
     });
+
+    n.on('unhandledRejection', (reason, p) => {
+        event.sender.send('error-reply', {
+            reason: reason,
+            p: p
+        });
+        n.kill('SIGKILL');
+    });
+
+    process.on('uncaughtException', (err) => {
+        event.sender.send('error-reply', {
+            err: err
+        });
+        n.kill('SIGKILL');
+    });
+    process.on('rejectionHandled', (p) => {
+        event.sender.send('error-reply', {
+            p: p
+        });
+        n.kill(1);
+    });
     //event.sender.send('stabilazed_volume-reply', `${__dirname}/process/volume.js`);
     n.send({ arg: arg });
 

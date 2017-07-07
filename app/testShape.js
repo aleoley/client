@@ -19,7 +19,6 @@ var TestShape = {
             ShpangX: 5,
             points: [
                 { z: 0, y: 10 },
-
                 { z: 4, y: 10 },
                 { z: 5, y: 10 },
             ]

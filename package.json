@@ -23,6 +23,7 @@
     "ng-table": "^3.0.1",
     "randomcolor": "^0.5.2",
     "ray-3d": "^1.1.1",
+    "regression": "^1.4.0",
     "spin": "0.0.1"
   }
 }
