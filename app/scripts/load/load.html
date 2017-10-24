@@ -1,0 +1,168 @@
+<div layout-gt-md="column" class="height100">
+
+    <md-content md-theme="docs-dark" layout-gt-md="row" layout-padding>
+
+        <h3> {{Ship.name}}</h3>
+        <!--<md-input-container>
+      <md-button class="md-primary md-raised" ng-click="show()">
+        Alert Dialog
+      </md-button>
+    </md-input-container>
+    <md-input-container>
+      <md-button ng-click="toggleLeft()" class="md-raised">
+        Toggle Sidenav
+      </md-button>
+    </md-input-container>-->
+
+    </md-content>
+
+    <div layout-gt-sm="row">
+        <md-content md-theme="docs-dark" flex-gt-xs="column" layout-padding>
+
+            <span us-spinner="{radius:30, width:8, length: 16}" spinner-key="spinner-1"></span>
+
+
+            <md-input-container>
+                <md-button class="md-primary md-raised" ng-click="show()">
+                    Alert Dialog
+                </md-button>
+            </md-input-container>
+        </md-content>
+
+    </div>
+
+
+
+
+
+
+    <div ng-cloak md-theme="docs-dark">
+        <md-content md-theme="docs-dark">
+            <md-tabs md-dynamic md-theme="docs-dark" md-border-bottom>
+                <md-tab label="one">
+                    <md-content class="md-padding">
+                        <h1 class="md-display-2">Tab One</h1>
+                        <md-content md-theme="docs-dark" flex layout-padding class="height100">
+                            <!--Table Area -->
+                            <div layout-gt-sm="row">
+                                <md-content md-theme="docs-dark" flex-gt-md="column" layout-padding>
+                                    <table ng-table="tableParams" class="table" show-filter="false">
+                                        <tr ng-repeat="user in $data">
+                                            <td title="'Title'" filter="{ title: 'text'}" sortable="'title'">
+                                                {{user.title}}
+                                            </td>
+                                            <td title="'Measure of measurement'" filter="{ measurement: 'text'}" sortable="'measurement'">
+                                                {{user.measurement}}</td>
+                                            <td title="'Param Name'" filter="{ name: 'text'}" sortable="'name'">
+                                                {{user.paramName}}
+                                            </td>
+                                            <td title="'Value'" filter="{ value: 'number'}" sortable="'value'">
+                                                {{user.value}}
+                                            </td>
+
+                                        </tr>
+                                    </table>
+                                </md-content>
+                            </div>
+
+                        </md-content>
+                    </md-content>
+                </md-tab>
+                <md-tab label="two">
+                    <md-content class="md-padding">
+                        <h1 class="md-display-2">Tab Two</h1>
+                        <md-content md-theme="docs-dark" flex layout-padding class="height100">
+                            <!--Table Area -->
+                            <div layout-gt-sm="row">
+                                <md-content md-theme="docs-dark" flex-gt-md="column" layout-padding>
+                                    <table ng-table="tableParams" class="table" show-filter="false">
+                                        <tr ng-repeat="user in $data">
+                                            <td title="'Title'" filter="{ title: 'text'}" sortable="'title'">
+                                                {{user.title}}
+                                            </td>
+                                            <td title="'Measure of measurement'" filter="{ measurement: 'text'}" sortable="'measurement'">
+                                                {{user.measurement}}</td>
+                                            <td title="'Param Name'" filter="{ name: 'text'}" sortable="'name'">
+                                                {{user.paramName}}
+                                            </td>
+                                            <td title="'Value'" filter="{ value: 'number'}" sortable="'value'">
+                                                {{user.value}}
+                                            </td>
+
+                                        </tr>
+                                    </table>
+                                </md-content>
+                            </div>
+
+                        </md-content>
+                    </md-content>
+                </md-tab>
+                <md-tab label="three">
+                    <md-content class="md-padding">
+                        <h1 class="md-display-2">Tab Three</h1>
+                        <md-content md-theme="docs-dark" flex layout-padding class="height100">
+                            <!--Table Area -->
+                            <div layout-gt-sm="row">
+                                <md-content md-theme="docs-dark" flex-gt-md="column" layout-padding>
+                                    <table ng-table="tableParams" class="table" show-filter="false">
+                                        <tr ng-repeat="user in $data">
+                                            <td title="'Title'" filter="{ title: 'text'}" sortable="'title'">
+                                                {{user.title}}
+                                            </td>
+                                            <td title="'Measure of measurement'" filter="{ measurement: 'text'}" sortable="'measurement'">
+                                                {{user.measurement}}</td>
+                                            <td title="'Param Name'" filter="{ name: 'text'}" sortable="'name'">
+                                                {{user.paramName}}
+                                            </td>
+                                            <td title="'Value'" filter="{ value: 'number'}" sortable="'value'">
+                                                {{user.value}}
+                                            </td>
+
+                                        </tr>
+                                    </table>
+                                </md-content>
+                            </div>
+
+                        </md-content>
+                    </md-content>
+                </md-tab>
+                  <md-tab label="four">
+                    <md-content class="md-padding">
+                        <h1 class="md-display-2">Tab four</h1>
+                        <md-content md-theme="docs-dark" flex layout-padding class="height100">
+                            <!--Table Area -->
+                            <div layout-gt-sm="row">
+                                <md-content md-theme="docs-dark" flex-gt-md="column" layout-padding>
+                                    <table ng-table="tableParams" class="table" show-filter="false">
+                                        <tr ng-repeat="user in $data">
+                                            <td title="'Title'" filter="{ title: 'text'}" sortable="'title'">
+                                                {{user.title}}
+                                            </td>
+                                            <td title="'Measure of measurement'" filter="{ measurement: 'text'}" sortable="'measurement'">
+                                                {{user.measurement}}</td>
+                                            <td title="'Param Name'" filter="{ name: 'text'}" sortable="'name'">
+                                                {{user.paramName}}
+                                            </td>
+                                            <td title="'Value'" filter="{ value: 'number'}" sortable="'value'">
+                                                {{user.value}}
+                                            </td>
+
+                                        </tr>
+                                    </table>
+                                </md-content>
+                            </div>
+
+                        </md-content>
+                    </md-content>
+                </md-tab>
+            </md-tabs>
+        </md-content>
+    </div>
+
+</div>
+
+
+
+
+<!--<div layout-gt-md="row" id="model">
+</div>-->

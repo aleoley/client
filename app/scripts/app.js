@@ -16,7 +16,8 @@ angular.module('app', [
     'mdPickers',
     'angularFileUpload',
     'ngTable',
-    'angularSpinner'
+    'angularSpinner',
+    'md.data.table'
 
 ])
     .run(function ($rootScope) {

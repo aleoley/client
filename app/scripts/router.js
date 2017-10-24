@@ -21,8 +21,13 @@ angular
         url: '/',
         templateUrl: './scripts/project/project.html',
         controller: 'projectController'
+      })
+      .state('load', {
+        url: '/',
+        templateUrl: './scripts/load/load.html',
+        controller: 'loadController'
       });
-
+    
     //   .state('reset_pwd', {
     //     url: '/reset/:hash',
     //     templateUrl: 'app/components/auth/templates/resetPwd.html',
